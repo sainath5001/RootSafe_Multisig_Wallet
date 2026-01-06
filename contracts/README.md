@@ -48,7 +48,7 @@ This multisignature wallet contract allows a group of owners to control a wallet
 
 1. **Clone the repository** (if not already done):
 ```bash
-git clone <repository-url>
+git clone https://github.com/sainath5001/RootSafe_Multisig_Wallet.git
 cd RootSafe_Multisig_Wallet/contracts
 ```
 
@@ -358,3 +358,133 @@ This software is provided "as is" without warranty. Use at your own risk. Always
 ---
 
 **Built with ❤️ for Rootstock (RSK)**
+
+## 📊 Architecture Diagram
+
+The following diagram illustrates the transaction flow and contract architecture:
+
+```mermaid
+graph TB
+    Start([Owner Initiates Transaction]) --> Submit[submitTransaction]
+    Submit --> Store[Transaction Stored in Array]
+    Store --> Event1[Emit SubmitTransaction Event]
+    Event1 --> Wait[Wait for Confirmations]
+    
+    Wait --> Owner2[Owner 2 Confirms]
+    Owner2 --> Confirm[confirmTransaction]
+    Confirm --> Check1{Already Confirmed?}
+    Check1 -->|Yes| Revert1[Revert: Already Confirmed]
+    Check1 -->|No| Update1[Update confirmations mapping]
+    Update1 --> Increment[Increment numConfirmations]
+    Increment --> Event2[Emit ConfirmTransaction Event]
+    
+    Wait --> Owner3[Owner 3 Confirms]
+    Owner3 --> Confirm2[confirmTransaction]
+    Confirm2 --> Update2[Update confirmations]
+    Update2 --> Increment2[Increment numConfirmations]
+    Increment2 --> Check2{Confirmations >= Required?}
+    
+    Check2 -->|No| Wait
+    Check2 -->|Yes| Execute[Execute Transaction]
+    
+    Execute --> Check3{Already Executed?}
+    Check3 -->|Yes| Revert2[Revert: Already Executed]
+    Check3 -->|No| Check4{Enough Confirmations?}
+    Check4 -->|No| Revert3[Revert: Insufficient Confirmations]
+    Check4 -->|Yes| ReentrancyGuard[ReentrancyGuard Protection]
+    ReentrancyGuard --> MarkExecuted[Mark as Executed]
+    MarkExecuted --> Call[Call recipient with value & data]
+    Call --> Success{Call Successful?}
+    Success -->|No| Revert4[Revert: Execution Failed]
+    Success -->|Yes| Event3[Emit ExecuteTransaction Event]
+    Event3 --> End([Transaction Complete])
+    
+    Wait --> Revoke[Owner Revokes Confirmation]
+    Revoke --> RevokeCheck{Has Confirmed?}
+    RevokeCheck -->|No| Revert5[Revert: Not Confirmed]
+    RevokeCheck -->|Yes| Update3[Remove confirmation]
+    Update3 --> Decrement[Decrement numConfirmations]
+    Decrement --> Event4[Emit RevokeConfirmation Event]
+    Event4 --> Wait
+    
+    style Start fill:#e1f5ff
+    style End fill:#d4edda
+    style Revert1 fill:#f8d7da
+    style Revert2 fill:#f8d7da
+    style Revert3 fill:#f8d7da
+    style Revert4 fill:#f8d7da
+    style Revert5 fill:#f8d7da
+    style Execute fill:#fff3cd
+    style ReentrancyGuard fill:#d1ecf1
+```
+
+## 🔄 Contract State Flow
+
+```mermaid
+stateDiagram-v2
+    [*] --> Deployed: Constructor with Owners & Required Confirmations
+    Deployed --> TransactionSubmitted: Owner calls submitTransaction
+    TransactionSubmitted --> Pending: Transaction stored (executed=false)
+    
+    Pending --> Confirming: Owner calls confirmTransaction
+    Confirming --> Pending: Confirmation added (numConfirmations++)
+    
+    Pending --> Revoking: Owner calls revokeConfirmation
+    Revoking --> Pending: Confirmation removed (numConfirmations--)
+    
+    Pending --> Executing: numConfirmations >= requiredConfirmations
+    Executing --> Executed: Transaction executed successfully
+    Executed --> [*]
+    
+    Executing --> Failed: Call to recipient fails
+    Failed --> [*]
+    
+    note right of Pending
+        Transaction can be confirmed
+        or revoked multiple times
+        by different owners
+    end note
+    
+    note right of Executing
+        ReentrancyGuard prevents
+        re-execution attacks
+    end note
+```
+
+## 🏛️ Contract Structure
+
+```mermaid
+classDiagram
+    class MultiSigWallet {
+        -address[] owners
+        -mapping(address => bool) isOwner
+        -uint256 requiredConfirmations
+        -Transaction[] transactions
+        -mapping(uint256 => mapping(address => bool)) confirmations
+        +constructor(address[] _owners, uint256 _requiredConfirmations)
+        +submitTransaction(address _to, uint256 _value, bytes _data) uint256
+        +confirmTransaction(uint256 _txId)
+        +revokeConfirmation(uint256 _txId)
+        +executeTransaction(uint256 _txId)
+        +getTransaction(uint256 _txId) Transaction
+        +getTransactionCount() uint256
+        +getOwnerCount() uint256
+        +isConfirmed(uint256 _txId, address _owner) bool
+        +receive() payable
+    }
+    
+    class Transaction {
+        +address to
+        +uint256 value
+        +bytes data
+        +bool executed
+        +uint256 numConfirmations
+    }
+    
+    class ReentrancyGuard {
+        <<imported>>
+    }
+    
+    MultiSigWallet --> Transaction : contains array
+    MultiSigWallet --|> ReentrancyGuard : inherits
+```
