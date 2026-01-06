@@ -268,4 +268,212 @@ MIT License - see LICENSE file for details
 
 **Built with ❤️ for Rootstock (RSK)**
 
+## 📊 Frontend Architecture Diagram
 
+The following diagram illustrates the frontend architecture and data flow:
+
+```mermaid
+graph TB
+    User[User Browser] --> MetaMask[MetaMask Wallet]
+    MetaMask --> Wagmi[Wagmi Provider]
+    Wagmi --> Viem[Viem Client]
+    Viem --> RPC[Rootstock RPC Node]
+    
+    NextApp[Next.js App] --> Providers[Wagmi & React Query Providers]
+    Providers --> Wagmi
+    
+    NextApp --> HomePage[Home Page]
+    HomePage --> Hero[Hero Section]
+    HomePage --> Stats[Stats Cards]
+    HomePage --> Dashboard[Wallet Dashboard]
+    HomePage --> OwnersList[Owners List]
+    HomePage --> SubmitForm[Submit Transaction Form]
+    HomePage --> TxList[Transaction List]
+    
+    SubmitForm --> useWriteContract[useWriteContract Hook]
+    useWriteContract --> Contract[MultiSigWallet Contract]
+    
+    TxList --> useReadContract[useReadContract Hook]
+    useReadContract --> Contract
+    
+    TxList --> Polling[Polling every 8s]
+    Polling --> useReadContract
+    
+    TxList --> TxItem[Transaction Item]
+    TxItem --> ApproveBtn[Approve Button]
+    TxItem --> RevokeBtn[Revoke Button]
+    TxItem --> ExecuteBtn[Execute Button]
+    
+    ApproveBtn --> useWriteContract
+    RevokeBtn --> useWriteContract
+    ExecuteBtn --> useWriteContract
+    
+    useWriteContract --> useWaitForTransaction[useWaitForTransaction]
+    useWaitForTransaction --> Toast[Toast Notification]
+    Toast --> User
+    
+    Contract --> Events[Contract Events]
+    Events --> RPC
+    
+    style User fill:#e1f5ff
+    style Contract fill:#fff3cd
+    style NextApp fill:#d4edda
+    style Toast fill:#d1ecf1
+```
+
+## 🔄 User Flow Diagram
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant M as MetaMask
+    participant F as Frontend
+    participant W as Wagmi
+    participant C as Contract
+    
+    U->>M: Click "Connect Wallet"
+    M->>U: Request Connection
+    U->>M: Approve
+    M->>W: Wallet Connected
+    W->>F: Update Connection State
+    
+    F->>C: Check if User is Owner
+    C-->>F: Return isOwner status
+    
+    alt User is Owner
+        U->>F: Fill Transaction Form
+        F->>W: submitTransaction(to, value, data)
+        W->>M: Request Transaction Signature
+        M->>U: Show Transaction Details
+        U->>M: Approve Transaction
+        M->>C: Submit Transaction
+        C-->>F: Emit SubmitTransaction Event
+        F->>F: Add Transaction to List
+        
+        U->>F: Click "Approve" on Transaction
+        F->>W: confirmTransaction(txId)
+        W->>M: Request Signature
+        U->>M: Approve
+        M->>C: Confirm Transaction
+        C-->>F: Emit ConfirmTransaction Event
+        F->>F: Update Confirmation Count
+        
+        alt Enough Confirmations
+            U->>F: Click "Execute"
+            F->>W: executeTransaction(txId)
+            W->>M: Request Signature
+            U->>M: Approve
+            M->>C: Execute Transaction
+            C->>C: Transfer RBTC
+            C-->>F: Emit ExecuteTransaction Event
+            F->>F: Update Transaction Status
+        end
+    else User is Not Owner
+        F->>U: Show "Not an Owner" Message
+    end
+    
+    F->>C: Poll Transaction Data (every 8s)
+    C-->>F: Return Updated Transaction State
+    F->>F: Update UI
+```
+
+## 🏗️ Component Architecture
+
+```mermaid
+graph LR
+    subgraph "Next.js App Router"
+        Layout[layout.tsx]
+        Page[page.tsx]
+        Providers[providers.tsx]
+    end
+    
+    subgraph "Components"
+        Navigation[Navigation]
+        Hero[Hero]
+        Footer[Footer]
+        ConnectBtn[ConnectButton]
+        SubmitForm[SubmitTxForm]
+        TxList[TxList]
+        TxItem[TransactionItem]
+        OwnersList[OwnersList]
+        Dashboard[WalletDashboard]
+        Stats[StatsCards]
+    end
+    
+    subgraph "Hooks & Utils"
+        WagmiHooks[useAccount<br/>useReadContract<br/>useWriteContract<br/>useWaitForTransaction]
+        Utils[formatRBTC<br/>truncateAddress<br/>getExplorerUrl]
+        Contract[contract.ts<br/>MULTISIG_ABI]
+    end
+    
+    subgraph "External"
+        MetaMask[MetaMask]
+        Rootstock[Rootstock Network]
+    end
+    
+    Layout --> Providers
+    Providers --> Page
+    Page --> Navigation
+    Page --> Hero
+    Page --> Stats
+    Page --> Dashboard
+    Page --> OwnersList
+    Page --> SubmitForm
+    Page --> TxList
+    Page --> Footer
+    
+    TxList --> TxItem
+    
+    ConnectBtn --> WagmiHooks
+    SubmitForm --> WagmiHooks
+    TxItem --> WagmiHooks
+    OwnersList --> WagmiHooks
+    Dashboard --> WagmiHooks
+    
+    WagmiHooks --> Contract
+    WagmiHooks --> MetaMask
+    Utils --> Contract
+    
+    MetaMask --> Rootstock
+    
+    style Providers fill:#d1ecf1
+    style WagmiHooks fill:#fff3cd
+    style Contract fill:#d4edda
+    style Rootstock fill:#e1f5ff
+```
+
+## 📱 Page Structure
+
+```mermaid
+graph TD
+    App[Root Layout] --> Nav[Navigation Bar]
+    App --> Main[Main Content]
+    App --> Footer[Footer]
+    
+    Main --> Hero[Hero Section<br/>Title, Description, CTA]
+    Main --> Stats[Stats Cards<br/>Transactions, TVL, Owners, Network]
+    Main --> Dashboard[Wallet Dashboard<br/>Charts & Analytics]
+    Main --> Owners[Owners List<br/>Owner Addresses & Status]
+    Main --> Content[Content Grid]
+    
+    Content --> Left[Left Column]
+    Content --> Right[Right Column]
+    
+    Left --> Submit[Submit Transaction Form<br/>Recipient, Amount, Data]
+    Right --> TxList[Transaction List<br/>Filter, Search, Items]
+    
+    TxList --> Filters[Filters: All/Pending/Executed]
+    TxList --> Search[Search Bar]
+    TxList --> Items[Transaction Items]
+    
+    Items --> Item[Transaction Item<br/>Details, Actions, Status]
+    
+    Item --> Approve[Approve Button]
+    Item --> Revoke[Revoke Button]
+    Item --> Execute[Execute Button]
+    Item --> Modal[Details Modal]
+    
+    style App fill:#e1f5ff
+    style Main fill:#d4edda
+    style Item fill:#fff3cd
+```
