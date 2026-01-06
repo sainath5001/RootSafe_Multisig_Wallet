@@ -1,0 +1,15 @@
+No files changed, compilation skipped
+Error: Failed to decode return value: 0x
+Traces:
+  [2086714] → new DeployMultiSig@0x5b73C5498c1E3b4dbA84de0F1833c4a029d90519
+    └─ ← [Return] 10312 bytes of code
+
+  [4034] DeployMultiSig::setUp()
+    ├─ [0] VM::envOr("OWNERS", "") [staticcall]
+    │   └─ ← [Return] <env var value>
+    ├─ [0] VM::envUint("PRIVATE_KEY") [staticcall]
+    │   └─ ← [Revert] vm.envUint: failed parsing $PRIVATE_KEY as type `uint256`: missing hex prefix ("0x") for hex string
+    └─ ← [Revert] vm.envUint: failed parsing $PRIVATE_KEY as type `uint256`: missing hex prefix ("0x") for hex string
+
+
+Error: script failed: <empty revert data>

@@ -525,7 +525,7 @@ contract MultiSigWalletTest is Test {
         assertEq(multisig.getTransactionCount(), 2);
     }
 
-    function test_GetOwnerCount() public {
+    function test_GetOwnerCount() public view {
         assertEq(multisig.getOwnerCount(), 3);
     }
 
