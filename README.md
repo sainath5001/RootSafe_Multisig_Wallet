@@ -168,7 +168,7 @@ RootSafe_Multisig_Wallet/
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/sainath5001/RootSafe_Multisig_Wallet.git
 cd RootSafe_Multisig_Wallet
 ```
 
