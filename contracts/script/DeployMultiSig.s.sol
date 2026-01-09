@@ -32,13 +32,12 @@ contract DeployMultiSig is Script {
                 owners[i] = vm.parseAddress(ownerStrings[i]);
             }
         } else {
-            // Default: Use deployer address and two additional addresses
-            // NOTE: In production, always set OWNERS environment variable
-            address deployer = vm.addr(vm.envUint("PRIVATE_KEY"));
+            // Default: Use test addresses
+            // NOTE: In production, always set OWNERS environment variable with real addresses
             owners = new address[](3);
-            owners[0] = deployer;
-            owners[1] = address(0x742D35CC6634c0532925A3b844BC9E7595F0BEb0); // Example owner 2
-            owners[2] = address(0x8BA1f109551Bd432803012645aaC136c22C929E0); // Example owner 3
+            owners[0] = address(0x742D35CC6634c0532925A3b844BC9E7595F0BEb0); // Example owner 1
+            owners[1] = address(0x8BA1f109551Bd432803012645aaC136c22C929E0); // Example owner 2
+            owners[2] = address(0x1234567890123456789012345678901234567890); // Example owner 3
         }
 
         // Read required confirmations from environment or use default
@@ -51,7 +50,6 @@ contract DeployMultiSig is Script {
 
     function run() public returns (MultiSigWallet) {
         // Read environment variables
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         string memory rpcUrl = vm.envString("ROOTSTOCK_TESTNET_RPC");
 
         console.log("Deploying MultiSigWallet to Rootstock Testnet...");
@@ -65,7 +63,8 @@ contract DeployMultiSig is Script {
             console.log("Owner", i, ":", owners[i]);
         }
 
-        vm.startBroadcast(deployerPrivateKey);
+        // Use private key from --private-key flag
+        vm.startBroadcast();
 
         // Deploy the contract
         MultiSigWallet multisig = new MultiSigWallet(owners, requiredConfirmations);

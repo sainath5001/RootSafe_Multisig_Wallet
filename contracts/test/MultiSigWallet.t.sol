@@ -100,7 +100,7 @@ contract MultiSigWalletTest is Test {
         owners[0] = owner1;
         owners[1] = owner1; // Duplicate
 
-        vm.expectRevert(MultiSigWallet.InvalidRequiredConfirmations.selector);
+        vm.expectRevert(MultiSigWallet.AlreadyOwner.selector);
         new MultiSigWallet(owners, 1);
     }
 
@@ -109,7 +109,7 @@ contract MultiSigWalletTest is Test {
         owners[0] = owner1;
         owners[1] = address(0);
 
-        vm.expectRevert(MultiSigWallet.InvalidRequiredConfirmations.selector);
+        vm.expectRevert(MultiSigWallet.ZeroAddressNotAllowed.selector);
         new MultiSigWallet(owners, 1);
     }
 
@@ -142,6 +142,12 @@ contract MultiSigWalletTest is Test {
         vm.prank(nonOwner);
         vm.expectRevert(MultiSigWallet.NotOwner.selector);
         multisig.submitTransaction(recipient, TRANSFER_AMOUNT, "");
+    }
+
+    function test_RevertIfSubmitTransactionToZeroAddress() public {
+        vm.prank(owner1);
+        vm.expectRevert(MultiSigWallet.InvalidRecipient.selector);
+        multisig.submitTransaction(address(0), TRANSFER_AMOUNT, "");
     }
 
     function test_SubmitMultipleTransactions() public {
