@@ -208,6 +208,51 @@ Required confirmations: 2
 
 **Important**: Save the contract address for frontend integration and verification.
 
+## 👥 Understanding Ownership
+
+### Ownership is Immutable
+
+**Important**: The owners of a MultiSigWallet are set **only during deployment** and **cannot be changed** afterward. This is by design for security - the contract has no functions to add or remove owners after deployment.
+
+### How to Become an Owner
+
+To become an owner of a multisig wallet, your address **must be included in the `OWNERS` list during deployment**.
+
+**Example - Deploy with yourself as one of 3 owners:**
+
+```bash
+# Get your wallet address from MetaMask (the address you want to be owner)
+# Then deploy with your address included:
+
+OWNERS="0xYourWalletAddress,0xOwner2Address,0xOwner3Address" \
+REQUIRED_CONFIRMATIONS=2 \
+forge script script/DeployMultiSig.s.sol:DeployMultiSig \
+  --rpc-url $ROOTSTOCK_TESTNET_RPC \
+  --private-key $PRIVATE_KEY \
+  --broadcast --legacy
+```
+
+**Note**: After deploying a new contract, update the frontend `.env.local` file with the new contract address.
+
+### Checking if You're an Owner
+
+1. **Via Frontend**:
+   - Deploy the frontend and go to http://localhost:3000
+   - Connect your MetaMask wallet
+   - If you see "You are not an owner" message, you're not an owner
+   - If you can submit transactions, you are an owner
+
+2. **Via Contract**:
+   - Call `isOwner(yourAddress)` on the deployed contract
+   - Returns `true` if you're an owner, `false` otherwise
+
+### Important Points
+
+- ✅ Owners are set **once** during contract deployment
+- ❌ Cannot add or remove owners after deployment
+- ✅ To become an owner: Deploy a new contract with your address in the `OWNERS` list
+- ✅ Choose owners carefully at deployment time
+
 ## ✅ Contract Verification
 
 ### Rootstock Explorer

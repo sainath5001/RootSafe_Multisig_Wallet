@@ -227,6 +227,22 @@ The smart contract is built with Foundry and implements a secure multisignature 
 - `contracts/test/MultiSigWallet.t.sol` - Test suite
 - `contracts/script/DeployMultiSig.s.sol` - Deployment script
 
+### 👥 Ownership
+
+**Important**: Owners are set **only during deployment** and **cannot be changed** afterward. To become an owner, your address must be included in the `OWNERS` environment variable during deployment.
+
+**Example:**
+```bash
+OWNERS="0xYourAddress,0xOwner2,0xOwner3" \
+REQUIRED_CONFIRMATIONS=2 \
+forge script script/DeployMultiSig.s.sol:DeployMultiSig \
+  --rpc-url $ROOTSTOCK_TESTNET_RPC \
+  --private-key $PRIVATE_KEY \
+  --broadcast --legacy
+```
+
+To check if you're an owner: Connect your wallet to the frontend - if you can submit transactions, you're an owner. See [contracts/README.md](./contracts/README.md#-understanding-ownership) for more details.
+
 ## 🎨 Frontend
 
 The frontend is built with Next.js 14, TypeScript, wagmi, and Tailwind CSS. See [frontend/README.md](./frontend/README.md) for detailed documentation.
