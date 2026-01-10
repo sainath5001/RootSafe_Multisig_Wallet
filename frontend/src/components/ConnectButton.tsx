@@ -1,9 +1,16 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useAccount, useConnect, useDisconnect, useBalance } from 'wagmi'
 import { formatRBTC } from '@/lib/utils'
 
 export function ConnectButton() {
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   const { address, isConnected } = useAccount()
   const { connect, connectors, isPending } = useConnect()
   const { disconnect } = useDisconnect()
@@ -12,9 +19,21 @@ export function ConnectButton() {
   const { data: balance, isLoading: balanceLoading } = useBalance({
     address: address,
     query: {
-      enabled: !!address,
+      enabled: !!address && isMounted,
     },
   })
+
+  // Prevent hydration mismatch - only render after mount
+  if (!isMounted) {
+    return (
+      <button
+        disabled
+        className="px-6 py-2 bg-[#2a2a2a] text-white rounded-lg opacity-50 cursor-not-allowed transition-colors font-semibold"
+      >
+        Loading...
+      </button>
+    )
+  }
 
   if (isConnected && address) {
     return (

@@ -2,15 +2,16 @@
 
 import { useState } from 'react'
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
-import { parseEther } from 'viem'
+import { parseEther, isAddress } from 'viem'
 import { MULTISIG_ADDRESS, MULTISIG_ABI } from '@/lib/contract'
-import { parseRBTC } from '@/lib/utils'
+import { parseRBTC, isValidAddress, isValidHex } from '@/lib/utils'
 
 export function SubmitTxForm() {
   const { address, isConnected } = useAccount()
   const [recipient, setRecipient] = useState('')
   const [amount, setAmount] = useState('')
   const [data, setData] = useState('')
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   const {
     writeContract,
@@ -26,15 +27,50 @@ export function SubmitTxForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setValidationError(null)
     
     if (!isConnected || !address) {
-      alert('Please connect your wallet first')
+      setValidationError('Please connect your wallet first')
+      return
+    }
+
+    // Validate recipient address
+    if (!recipient.trim()) {
+      setValidationError('Recipient address is required')
+      return
+    }
+
+    if (!isValidAddress(recipient)) {
+      setValidationError('Invalid recipient address. Please enter a valid Ethereum address.')
+      return
+    }
+
+    // Validate hex data if provided
+    if (data.trim() && !isValidHex(data)) {
+      setValidationError('Invalid hex data. Data must be a valid hexadecimal string (e.g., 0x1234abcd)')
       return
     }
 
     try {
       const value = parseRBTC(amount)
-      const txData = data ? (data.startsWith('0x') ? data as `0x${string}` : `0x${data}` as `0x${string}`) : '0x' as `0x${string}`
+      
+      // Safely convert data to hex string
+      let txData: `0x${string}` = '0x'
+      if (data.trim()) {
+        const cleanedData = data.trim().startsWith('0x') ? data.trim().slice(2) : data.trim()
+        // Validate hex characters
+        if (!/^[0-9a-fA-F]+$/.test(cleanedData)) {
+          setValidationError('Invalid hex data format')
+          return
+        }
+        txData = `0x${cleanedData}` as `0x${string}`
+      }
+
+      // Validate recipient is a valid address type
+      if (!isAddress(recipient)) {
+        setValidationError('Invalid recipient address format')
+        return
+      }
 
       writeContract({
         address: MULTISIG_ADDRESS,
@@ -43,6 +79,8 @@ export function SubmitTxForm() {
         args: [recipient as `0x${string}`, value, txData],
       })
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error submitting transaction'
+      setValidationError(errorMessage)
       console.error('Error submitting transaction:', err)
     }
   }
@@ -109,6 +147,11 @@ export function SubmitTxForm() {
         {isConfirmed && (
           <p className="text-green-400 text-sm">
             Transaction submitted successfully!
+          </p>
+        )}
+        {validationError && (
+          <p className="text-red-400 text-sm">
+            {validationError}
           </p>
         )}
         {error && (

@@ -65,7 +65,10 @@ const config = createConfig({
     metaMask(),
   ],
   transports: {
-    [selectedChain.id]: http(rpcUrl),
+    [selectedChain.id]: http(rpcUrl, {
+      timeout: 10000, // 10 second timeout
+      retryCount: 1,
+    }),
   } as Record<number, ReturnType<typeof http>>,
 })
 

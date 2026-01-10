@@ -1,4 +1,4 @@
-import { formatEther, parseEther } from 'viem'
+import { formatEther, parseEther, isAddress, isHex } from 'viem'
 
 /**
  * Format RBTC amount from wei to ether
@@ -50,5 +50,34 @@ export function getExplorerTxUrl(txHash: string): string {
 export function getExplorerAddressUrl(address: string): string {
   const explorerBase = process.env.NEXT_PUBLIC_EXPLORER_URL || 'https://explorer.testnet.rsk.co'
   return `${explorerBase}/address/${address}`
+}
+
+/**
+ * Validate Ethereum address format
+ */
+export function isValidAddress(address: string): boolean {
+  if (!address) return false
+  try {
+    return isAddress(address)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Validate hex string format
+ */
+export function isValidHex(hex: string): boolean {
+  if (!hex) return true // Empty is valid (will be converted to 0x)
+  try {
+    // Remove 0x prefix if present for validation
+    const hexWithoutPrefix = hex.startsWith('0x') ? hex.slice(2) : hex
+    // Check if it's a valid hex string (only 0-9, a-f, A-F)
+    if (!/^[0-9a-fA-F]+$/.test(hexWithoutPrefix)) return false
+    // Use viem's isHex for additional validation
+    return isHex(hex.startsWith('0x') ? hex : `0x${hex}`)
+  } catch {
+    return false
+  }
 }
 

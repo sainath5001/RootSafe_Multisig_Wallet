@@ -66,17 +66,17 @@ contract MultiSigWallet is ReentrancyGuard {
     /// @dev Thrown when address is not an owner
     error NotAnOwner();
 
-    /// @dev Thrown when zero address is provided (not allowed)
-    error ZeroAddressNotAllowed();
-
-    /// @dev Thrown when recipient address is zero (prevents fund burning)
-    error InvalidRecipient();
-
     /// @dev Thrown when owners array is empty
     error OwnersRequired();
 
     /// @dev Thrown when required confirmations is zero or greater than number of owners
     error InvalidRequiredConfirmations();
+
+    /// @dev Thrown when zero address is provided as owner
+    error ZeroAddressNotAllowed();
+
+    /// @dev Thrown when trying to send funds to zero address
+    error InvalidRecipient();
 
     /// @dev Thrown when transaction execution fails
     error TxExecutionFailed();
@@ -103,10 +103,9 @@ contract MultiSigWallet is ReentrancyGuard {
     /// @dev Number of required confirmations to execute a transaction
     uint256 public requiredConfirmations;
 
-    /// @dev Array of all transactions
-    /// @notice This array grows indefinitely. For production use, consider implementing pagination
-    /// or limiting the number of transactions. The frontend polls all transactions which could
-    /// become expensive as the array grows.
+    /// @notice Array of all transactions
+    /// @dev This array grows indefinitely without limit. For production use, consider implementing pagination
+    ///      or limiting the array size to prevent gas costs from becoming prohibitive when fetching transactions.
     Transaction[] public transactions;
 
     /// @dev Mapping from transaction ID to mapping of owner address to whether they confirmed
@@ -184,7 +183,7 @@ contract MultiSigWallet is ReentrancyGuard {
     /// @param _data The transaction data (for contract calls, empty for simple transfers)
     /// @return txId The ID of the newly created transaction
     /// @notice Only owners can submit transactions
-    /// @notice Reverts if recipient is zero address to prevent fund burning
+    /// @notice Prevents sending funds to zero address (permanent fund burning)
     function submitTransaction(address _to, uint256 _value, bytes calldata _data)
         external
         onlyOwner

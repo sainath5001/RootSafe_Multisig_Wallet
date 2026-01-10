@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useReadContract, useAccount } from 'wagmi'
 import { MULTISIG_ADDRESS, MULTISIG_ABI } from '@/lib/contract'
 import { truncateAddress, getExplorerAddressUrl } from '@/lib/utils'
@@ -8,20 +9,45 @@ import { FaUser, FaCheckCircle, FaCopy } from 'react-icons/fa'
 import toast from 'react-hot-toast'
 
 export function OwnersList() {
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   const { address: userAddress } = useAccount()
 
   // Get owner count
   const { data: ownerCount } = useReadContract({
-    address: MULTISIG_ADDRESS,
+    address: isMounted ? MULTISIG_ADDRESS : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getOwnerCount',
+    query: {
+      enabled: isMounted,
+    },
   })
 
   const ownerCountNum = ownerCount ? Number(ownerCount) : 0
 
   const copyToClipboard = (text: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
     navigator.clipboard.writeText(text)
     toast.success('Address copied!')
+    }
+  }
+
+  if (!isMounted) {
+    return (
+      <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+        <div className="animate-pulse">
+          <div className="h-6 bg-[#2a2a2a] rounded w-32 mb-4"></div>
+          <div className="space-y-2">
+            <div className="h-12 bg-[#2a2a2a] rounded"></div>
+            <div className="h-12 bg-[#2a2a2a] rounded"></div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

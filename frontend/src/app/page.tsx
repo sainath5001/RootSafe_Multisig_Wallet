@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Navigation } from '@/components/Navigation'
 import { Hero } from '@/components/Hero'
 import { StatsCards } from '@/components/StatsCards'
@@ -11,6 +12,12 @@ import { WalletDashboard } from '@/components/WalletDashboard'
 import { useAccount } from 'wagmi'
 
 export default function Home() {
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   const { isConnected } = useAccount()
 
   return (
@@ -22,7 +29,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
           <StatsCards />
           
-          {isConnected ? (
+          {isMounted && isConnected ? (
             <div className="mt-12 space-y-6">
               <WalletDashboard />
               <OwnersList />
@@ -35,11 +42,15 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          ) : (
+          ) : isMounted ? (
             <div className="mt-12 text-center">
               <p className="text-[#a0a0a0] text-lg">
                 Connect your wallet to start using the multisig wallet
               </p>
+            </div>
+          ) : (
+            <div className="mt-12 text-center">
+              <p className="text-[#a0a0a0] text-lg">Loading...</p>
             </div>
           )}
         </div>

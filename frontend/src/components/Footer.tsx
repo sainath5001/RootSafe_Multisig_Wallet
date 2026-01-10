@@ -1,11 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { 
-  FaGithub, 
-  FaTwitter, 
-  FaDiscord, 
-  FaBook, 
+import {
+  FaGithub,
+  FaTwitter,
+  FaDiscord,
+  FaBook,
   FaExternalLinkAlt,
   FaHeart
 } from 'react-icons/fa'
@@ -163,5 +163,7 @@ export function Footer() {
     </footer>
   )
 }
+
+
 
 

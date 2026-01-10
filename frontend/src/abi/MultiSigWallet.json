@@ -355,19 +355,6 @@
   },
   {
     "type": "event",
-    "name": "OwnerRemoved",
-    "inputs": [
-      {
-        "name": "owner",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
     "name": "RevokeConfirmation",
     "inputs": [
       {
@@ -434,6 +421,11 @@
   },
   {
     "type": "error",
+    "name": "InvalidRecipient",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "InvalidRequiredConfirmations",
     "inputs": []
   },
@@ -480,6 +472,11 @@
   {
     "type": "error",
     "name": "TxNotConfirmed",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ZeroAddressNotAllowed",
     "inputs": []
   }
 ]

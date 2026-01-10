@@ -1,10 +1,17 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { RootstockLogo } from './RootstockLogo'
 import { ConnectButton } from './ConnectButton'
 import { useAccount } from 'wagmi'
 
 export function Hero() {
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   const { isConnected } = useAccount()
 
   return (
@@ -23,7 +30,7 @@ export function Hero() {
           <p className="text-lg text-[#666] mb-8 max-w-2xl mx-auto">
             Require multiple approvals for transactions. Built on Rootstock (RSK) for maximum security.
           </p>
-          {!isConnected && (
+          {isMounted && !isConnected && (
             <div className="mt-8">
               <ConnectButton />
             </div>
@@ -33,5 +40,9 @@ export function Hero() {
     </section>
   )
 }
+
+
+
+
 
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useReadContract, useBalance } from 'wagmi'
 import { MULTISIG_ADDRESS, MULTISIG_ABI } from '@/lib/contract'
 import { formatRBTC } from '@/lib/utils'
@@ -20,43 +20,76 @@ export function WalletDashboard() {
     setIsMounted(true)
   }, [])
 
-  const { data: txCount } = useReadContract({
-    address: MULTISIG_ADDRESS,
+  const { data: txCount, error: txCountError } = useReadContract({
+    address: isMounted ? MULTISIG_ADDRESS : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getTransactionCount',
+    query: {
+      enabled: isMounted, // Only fetch when mounted (client-side)
+      retry: 1,
+      retryDelay: 1000,
+    },
   })
 
-  const { data: ownerCount } = useReadContract({
-    address: MULTISIG_ADDRESS,
+  const { data: ownerCount, error: ownerCountError } = useReadContract({
+    address: isMounted ? MULTISIG_ADDRESS : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getOwnerCount',
+    query: {
+      enabled: isMounted, // Only fetch when mounted (client-side)
+      retry: 1,
+      retryDelay: 1000,
+    },
   })
 
-  const { data: requiredConfirmations } = useReadContract({
-    address: MULTISIG_ADDRESS,
+  const { data: requiredConfirmations, error: requiredConfirmationsError } = useReadContract({
+    address: isMounted ? MULTISIG_ADDRESS : undefined,
     abi: MULTISIG_ABI,
     functionName: 'requiredConfirmations',
+    query: {
+      enabled: isMounted, // Only fetch when mounted (client-side)
+      retry: 1,
+      retryDelay: 1000,
+    },
   })
 
-  const { data: balance } = useBalance({
-    address: MULTISIG_ADDRESS,
+  const { data: balance, error: balanceError } = useBalance({
+    address: isMounted ? MULTISIG_ADDRESS : undefined,
+    query: {
+      enabled: isMounted, // Only fetch when mounted (client-side)
+      retry: 1,
+      retryDelay: 1000,
+    },
   })
 
-  // Mock data for charts (in production, you'd fetch real historical data)
-  const transactionHistory = [
-    { day: 'Day 1', transactions: 2, confirmations: 4 },
-    { day: 'Day 2', transactions: 5, confirmations: 8 },
-    { day: 'Day 3', transactions: 3, confirmations: 6 },
-    { day: 'Day 4', transactions: 7, confirmations: 12 },
-    { day: 'Day 5', transactions: 4, confirmations: 8 },
-    { day: 'Day 6', transactions: 6, confirmations: 10 },
-    { day: 'Day 7', transactions: 8, confirmations: 14 },
-  ]
+  // Calculate real transaction statistics
+  // Note: Fetching all transactions for detailed charts would be expensive.
+  // For production, consider using an indexer or backend API to aggregate historical data.
+  const txCountNum = txCount ? Number(txCount) : 0
+  
+  const { transactionHistory, confirmationRate } = useMemo(() => {
+    // For now, we'll calculate based on txCount since fetching all transactions
+    // could be expensive. In a production app, you'd use an indexer or backend API.
+    const totalTxs = txCountNum
+    const executedTxs = 0 // Would need to fetch all transactions to calculate accurately
+    
+    // Since we can't efficiently fetch all transactions for charts,
+    // we'll show a simplified view based on available data
+    const transactionHistory = totalTxs > 0 ? [
+      { day: 'Total', transactions: totalTxs, confirmations: Number(requiredConfirmations || 0) * totalTxs },
+    ] : []
 
-  const confirmationRate = [
-    { status: 'Pending', count: Number(txCount || 0) - (Number(txCount || 0) * 0.7) },
-    { status: 'Executed', count: Number(txCount || 0) * 0.7 },
-  ]
+    const pendingCount = totalTxs - executedTxs
+    const confirmationRate = totalTxs > 0 ? [
+      { status: 'Pending', count: pendingCount },
+      { status: 'Executed', count: executedTxs },
+    ] : [
+      { status: 'Pending', count: 0 },
+      { status: 'Executed', count: 0 },
+    ]
+
+    return { transactionHistory, confirmationRate }
+  }, [txCountNum, requiredConfirmations])
 
   if (!isMounted) {
     return (

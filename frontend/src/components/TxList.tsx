@@ -1,43 +1,87 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAccount, useReadContract } from 'wagmi'
 import { MULTISIG_ADDRESS, MULTISIG_ABI } from '@/lib/contract'
 import { TransactionItem } from './TransactionItem'
 import { FaSearch, FaFilter } from 'react-icons/fa'
 
 export function TxListSimple() {
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   const { address, isConnected } = useAccount()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'executed'>('all')
 
   const { data: txCount } = useReadContract({
-    address: MULTISIG_ADDRESS,
+    address: isMounted ? MULTISIG_ADDRESS : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getTransactionCount',
+    query: {
+      enabled: isMounted,
+    },
   })
 
   const { data: ownerCount } = useReadContract({
-    address: MULTISIG_ADDRESS,
+    address: isMounted ? MULTISIG_ADDRESS : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getOwnerCount',
+    query: {
+      enabled: isMounted,
+    },
   })
 
   const { data: requiredConfirmations } = useReadContract({
-    address: MULTISIG_ADDRESS,
+    address: isMounted ? MULTISIG_ADDRESS : undefined,
     abi: MULTISIG_ABI,
     functionName: 'requiredConfirmations',
+    query: {
+      enabled: isMounted,
+    },
   })
 
   const { data: isOwner } = useReadContract({
-    address: MULTISIG_ADDRESS,
+    address: isMounted ? MULTISIG_ADDRESS : undefined,
     abi: MULTISIG_ABI,
     functionName: 'isOwner',
     args: address ? [address] : undefined,
     query: {
-      enabled: !!address,
+      enabled: isMounted && !!address,
     },
   })
+
+  // Calculate txCountNum - must be before early returns (Rules of Hooks)
+  const txCountNum = isMounted && txCount ? Number(txCount) : 0
+
+  // Filter transactions - must be before early returns (Rules of Hooks)
+  const filteredTxIds = useMemo(() => {
+    if (!isMounted || !txCountNum) return []
+    const allIds = Array.from({ length: txCountNum }, (_, i) => i)
+    if (filterStatus === 'all' && !searchTerm) return allIds
+    return allIds.filter((id) => {
+      // We'll filter in the wrapper component based on actual tx data
+      return true
+    })
+  }, [isMounted, txCountNum, filterStatus, searchTerm])
+
+  // Early returns AFTER all hooks are called
+  if (!isMounted) {
+    return (
+      <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+        <div className="animate-pulse">
+          <div className="h-6 bg-[#2a2a2a] rounded w-32 mb-4"></div>
+          <div className="h-10 bg-[#2a2a2a] rounded mb-4"></div>
+          <div className="space-y-2">
+            <div className="h-20 bg-[#2a2a2a] rounded"></div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (!isConnected) {
     return (
@@ -47,18 +91,6 @@ export function TxListSimple() {
       </div>
     )
   }
-
-  const txCountNum = txCount ? Number(txCount) : 0
-
-  // Filter transactions
-  const filteredTxIds = useMemo(() => {
-    const allIds = Array.from({ length: txCountNum }, (_, i) => i)
-    if (filterStatus === 'all' && !searchTerm) return allIds
-    return allIds.filter((id) => {
-      // We'll filter in the wrapper component based on actual tx data
-      return true
-    })
-  }, [txCountNum, filterStatus, searchTerm])
 
   return (
     <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
