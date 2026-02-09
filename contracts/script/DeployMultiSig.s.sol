@@ -94,21 +94,29 @@ contract DeployMultiSig is Script {
 /**
  * @notice Example deployment command:
  *
+ * # First, load environment variables from .env file
+ * set -a && source .env && set +a
+ *
+ * # Then deploy
  * forge script script/DeployMultiSig.s.sol:DeployMultiSig \
- *   --rpc-url $ROOTSTOCK_TESTNET_RPC \
+ *   --fork-url $ROOTSTOCK_TESTNET_RPC \
  *   --private-key $PRIVATE_KEY \
- *   --broadcast \
+ *   --broadcast --legacy \
  *   --verify \
  *   --etherscan-api-key $ROOTSTOCK_API_KEY
  *
  * @notice To set owners and required confirmations:
  *
+ * # Load environment variables first
+ * set -a && source .env && set +a
+ *
+ * # Then deploy with custom owners
  * OWNERS="0x123...,0x456...,0x789..." \
  * REQUIRED_CONFIRMATIONS=2 \
  * forge script script/DeployMultiSig.s.sol:DeployMultiSig \
- *   --rpc-url $ROOTSTOCK_TESTNET_RPC \
+ *   --fork-url $ROOTSTOCK_TESTNET_RPC \
  *   --private-key $PRIVATE_KEY \
- *   --broadcast
+ *   --broadcast --legacy
  *
  * @notice Example Rootstock Testnet RPC URLs:
  * - Public RPC: https://public-node.testnet.rsk.co

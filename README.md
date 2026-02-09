@@ -188,10 +188,14 @@ cp .env.example .env
 forge test
 
 # Deploy to Rootstock Testnet
+# First, load environment variables from .env file
+set -a && source .env && set +a
+
+# Then deploy
 forge script script/DeployMultiSig.s.sol:DeployMultiSig \
-  --rpc-url $ROOTSTOCK_TESTNET_RPC \
+  --fork-url $ROOTSTOCK_TESTNET_RPC \
   --private-key $PRIVATE_KEY \
-  --broadcast
+  --broadcast --legacy
 ```
 
 Save the deployed contract address for the frontend.
@@ -233,10 +237,14 @@ The smart contract is built with Foundry and implements a secure multisignature 
 
 **Example:**
 ```bash
+# Load environment variables from .env file
+set -a && source .env && set +a
+
+# Deploy with custom owners
 OWNERS="0xYourAddress,0xOwner2,0xOwner3" \
 REQUIRED_CONFIRMATIONS=2 \
 forge script script/DeployMultiSig.s.sol:DeployMultiSig \
-  --rpc-url $ROOTSTOCK_TESTNET_RPC \
+  --fork-url $ROOTSTOCK_TESTNET_RPC \
   --private-key $PRIVATE_KEY \
   --broadcast --legacy
 ```

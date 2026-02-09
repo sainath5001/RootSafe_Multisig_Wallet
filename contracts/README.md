@@ -164,33 +164,52 @@ https://public-node.testnet.rsk.co
 
 ### Deploy to Rootstock Testnet
 
+**Important**: Before deploying, you must load environment variables from your `.env` file:
+
+```bash
+# Load environment variables from .env file
+set -a && source .env && set +a
+```
+
 **Basic deployment** (uses default owners from script):
 
 ```bash
+# Load environment variables first
+set -a && source .env && set +a
+
+# Then deploy
 forge script script/DeployMultiSig.s.sol:DeployMultiSig \
-  --rpc-url $ROOTSTOCK_TESTNET_RPC \
+  --fork-url $ROOTSTOCK_TESTNET_RPC \
   --private-key $PRIVATE_KEY \
-  --broadcast
+  --broadcast --legacy
 ```
 
 **With custom owners and confirmations**:
 
 ```bash
+# Load environment variables first
+set -a && source .env && set +a
+
+# Then deploy with custom owners
 OWNERS="0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb,0x8ba1f109551bD432803012645Hac136c22C929e,0x1234567890123456789012345678901234567890" \
 REQUIRED_CONFIRMATIONS=2 \
 forge script script/DeployMultiSig.s.sol:DeployMultiSig \
-  --rpc-url $ROOTSTOCK_TESTNET_RPC \
+  --fork-url $ROOTSTOCK_TESTNET_RPC \
   --private-key $PRIVATE_KEY \
-  --broadcast
+  --broadcast --legacy
 ```
 
 **With verification** (if Rootstock explorer supports it):
 
 ```bash
+# Load environment variables first
+set -a && source .env && set +a
+
+# Then deploy with verification
 forge script script/DeployMultiSig.s.sol:DeployMultiSig \
-  --rpc-url $ROOTSTOCK_TESTNET_RPC \
+  --fork-url $ROOTSTOCK_TESTNET_RPC \
   --private-key $PRIVATE_KEY \
-  --broadcast \
+  --broadcast --legacy \
   --verify \
   --etherscan-api-key $ROOTSTOCK_API_KEY
 ```
@@ -214,37 +233,7 @@ Required confirmations: 2
 
 **Important**: The owners of a MultiSigWallet are set **only during deployment** and **cannot be changed** afterward. This is by design for security - the contract has no functions to add or remove owners after deployment.
 
-### How to Become an Owner
-
-To become an owner of a multisig wallet, your address **must be included in the `OWNERS` list during deployment**.
-
-**Example - Deploy with yourself as one of 3 owners:**
-
-```bash
-# Get your wallet address from MetaMask (the address you want to be owner)
-# Then deploy with your address included:
-
-OWNERS="0xYourWalletAddress,0xOwner2Address,0xOwner3Address" \
-REQUIRED_CONFIRMATIONS=2 \
-forge script script/DeployMultiSig.s.sol:DeployMultiSig \
-  --rpc-url $ROOTSTOCK_TESTNET_RPC \
-  --private-key $PRIVATE_KEY \
-  --broadcast --legacy
-```
-
 **Note**: After deploying a new contract, update the frontend `.env.local` file with the new contract address.
-
-### Checking if You're an Owner
-
-1. **Via Frontend**:
-   - Deploy the frontend and go to http://localhost:3000
-   - Connect your MetaMask wallet
-   - If you see "You are not an owner" message, you're not an owner
-   - If you can submit transactions, you are an owner
-
-2. **Via Contract**:
-   - Call `isOwner(yourAddress)` on the deployed contract
-   - Returns `true` if you're an owner, `false` otherwise
 
 ### Important Points
 
@@ -276,19 +265,6 @@ forge script script/DeployMultiSig.s.sol:DeployMultiSig \
 5. **Upload source code**:
    - Copy the contents of `src/MultiSigWallet.sol`
    - Include any imported contracts (OpenZeppelin) if using "Standard JSON Input"
-
-### Using Foundry Verify (if supported)
-
-```bash
-forge verify-contract \
-  <CONTRACT_ADDRESS> \
-  src/MultiSigWallet.sol:MultiSigWallet \
-  --chain-id 31 \
-  --num-of-optimizations 200 \
-  --compiler-version 0.8.20 \
-  --etherscan-api-key $ROOTSTOCK_API_KEY \
-  --rpc-url $ROOTSTOCK_TESTNET_RPC
-```
 
 ## 📁 Project Structure
 
@@ -336,45 +312,6 @@ contracts/
 6. **Testing**:
    - Comprehensive test suite included
    - Consider additional audits before mainnet deployment
-
-## 🎓 Usage Examples
-
-### Submitting a Transaction
-
-```solidity
-// Owner submits a transaction to send 0.01 RBTC
-uint256 txId = multisig.submitTransaction(
-    recipientAddress,
-    0.01 ether,
-    ""
-);
-```
-
-### Confirming a Transaction
-
-```solidity
-// Owner confirms transaction
-multisig.confirmTransaction(txId);
-```
-
-### Executing a Transaction
-
-```solidity
-// Execute when enough confirmations (requires M-of-N)
-multisig.executeTransaction(txId);
-```
-
-### Viewing Transaction Details
-
-```solidity
-(
-    address to,
-    uint256 value,
-    bytes memory data,
-    bool executed,
-    uint256 numConfirmations
-) = multisig.getTransaction(txId);
-```
 
 ## 📚 Additional Resources
 
