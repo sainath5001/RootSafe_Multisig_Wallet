@@ -8,11 +8,11 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen flex flex-col bg-black">
       <Navigation />
-      
+
       <main className="flex-1">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <h1 className="text-4xl font-bold text-white mb-8">About Multisig Wallet</h1>
-          
+
           <div className="space-y-8">
             {/* What is Multisig */}
             <section className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
@@ -21,9 +21,9 @@ export default function AboutPage() {
                 What is a Multisignature Wallet?
               </h2>
               <p className="text-[#a0a0a0] leading-relaxed">
-                A multisignature (multisig) wallet is a cryptocurrency wallet that requires multiple 
-                private keys to authorize a transaction. Instead of a single key controlling the funds, 
-                multiple owners must approve transactions before they can be executed. This adds an 
+                A multisignature (multisig) wallet is a cryptocurrency wallet that requires multiple
+                private keys to authorize a transaction. Instead of a single key controlling the funds,
+                multiple owners must approve transactions before they can be executed. This adds an
                 extra layer of security and prevents a single point of failure.
               </p>
             </section>
@@ -122,6 +122,7 @@ export default function AboutPage() {
     </div>
   )
 }
+
 
 
 
