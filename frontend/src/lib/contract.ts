@@ -6,11 +6,17 @@ import type { Abi } from 'viem'
  * Contract configuration
  * Update NEXT_PUBLIC_MULTISIG_ADDRESS in .env.local with your deployed contract address
  */
-export const MULTISIG_ADDRESS = (process.env.NEXT_PUBLIC_MULTISIG_ADDRESS || 
+export const MULTISIG_ADDRESS = (process.env.NEXT_PUBLIC_MULTISIG_ADDRESS ||
   '0x3886eC7a6ca3841944a27439126096d6978f8884') as Address
 
-// Ensure ABI is properly typed as an array for wagmi compatibility
-export const MULTISIG_ABI = MultiSigWalletABI as Abi
+/**
+ * ABI must be an array for wagmi/viem (they use .filter() on it).
+ * Support both: raw ABI array JSON or full Foundry artifact { abi, bytecode, ... }.
+ */
+const rawAbi = MultiSigWalletABI as unknown
+export const MULTISIG_ABI: Abi = Array.isArray(rawAbi)
+  ? (rawAbi as Abi)
+  : (rawAbi as { abi: Abi }).abi
 
 /**
  * Transaction structure from the contract

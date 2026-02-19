@@ -1,17 +1,25 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Optimize for lower memory usage
-  swcMinify: true,
+  // Reduce memory during build (helps on low-RAM machines; "Killed" = OOM)
+  productionBrowserSourceMaps: false,
+  // swcMinify removed: Next.js 15+ uses SWC minification by default
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
+  },
+  // Memory reduction for low-RAM machines (avoids "Killed" / OOM)
+  // webpackBuildWorker left at default (true) so dev server stays up during compile
+  experimental: {
+    webpackMemoryOptimizations: true,
   },
   // Increase timeout for slow compilations
   onDemandEntries: {
     maxInactiveAge: 60 * 1000,
     pagesBufferLength: 5,
   },
-  webpack: (config, { isServer, webpack }) => {
+  webpack: (config, { dev, isServer, webpack }) => {
+    // Disable webpack cache during production build to reduce peak memory (avoids OOM)
+    if (!dev && !isServer) config.cache = false
     // Optimize memory usage
     config.optimization = {
       ...config.optimization,

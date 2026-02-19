@@ -62,9 +62,7 @@ export function isValidAddress(address: string): boolean {
   } catch {
     return false
   }
-}
-
-/**
+}/**
  * Validate hex string format
  */
 export function isValidHex(hex: string): boolean {
@@ -80,4 +78,3 @@ export function isValidHex(hex: string): boolean {
     return false
   }
 }
-
