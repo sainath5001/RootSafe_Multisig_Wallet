@@ -200,6 +200,8 @@ forge script script/DeployMultiSig.s.sol:DeployMultiSig \
 
 Save the deployed contract address for the frontend.
 
+Before executing transactions from the frontend, send some RBTC to the multisig contract address (the contract balance must be >= the transaction Amount), otherwise `executeTransaction` will revert.
+
 ### 3. Set Up Frontend
 
 ```bash

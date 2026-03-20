@@ -5,6 +5,7 @@ import { WagmiProvider, createConfig, http } from 'wagmi'
 import { defineChain } from 'viem'
 import { injected, metaMask } from 'wagmi/connectors'
 import { ReactNode, useState } from 'react'
+import { MultisigProvider } from '@/context/MultisigContext'
 
 // Define Rootstock Testnet chain
 const rootstockTestnet = defineChain({
@@ -78,7 +79,7 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <MultisigProvider>{children}</MultisigProvider>
       </QueryClientProvider>
     </WagmiProvider>
   )

@@ -2,26 +2,21 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useReadContract, useBalance } from 'wagmi'
-import { MULTISIG_ADDRESS, MULTISIG_ABI } from '@/lib/contract'
+import { MULTISIG_ABI } from '@/lib/contract'
+import { useMultisig } from '@/context/MultisigContext'
 import { formatRBTC } from '@/lib/utils'
-import dynamic from 'next/dynamic'
-import { FaChartLine, FaChartBar } from 'react-icons/fa'
-
-// Dynamically import charts to avoid SSR issues
-const ChartSection = dynamic(() => import('./ChartSection'), { 
-  ssr: false,
-  loading: () => <div className="h-[300px] bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg animate-pulse"></div>
-})
+import ChartSection from './ChartSection'
 
 export function WalletDashboard() {
   const [isMounted, setIsMounted] = useState(false)
+  const { multisigAddress } = useMultisig()
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
   const { data: txCount, error: txCountError } = useReadContract({
-    address: isMounted ? MULTISIG_ADDRESS : undefined,
+    address: isMounted ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getTransactionCount',
     query: {
@@ -32,7 +27,7 @@ export function WalletDashboard() {
   })
 
   const { data: ownerCount, error: ownerCountError } = useReadContract({
-    address: isMounted ? MULTISIG_ADDRESS : undefined,
+    address: isMounted ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getOwnerCount',
     query: {
@@ -43,7 +38,7 @@ export function WalletDashboard() {
   })
 
   const { data: requiredConfirmations, error: requiredConfirmationsError } = useReadContract({
-    address: isMounted ? MULTISIG_ADDRESS : undefined,
+    address: isMounted ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'requiredConfirmations',
     query: {
@@ -54,7 +49,7 @@ export function WalletDashboard() {
   })
 
   const { data: balance, error: balanceError } = useBalance({
-    address: isMounted ? MULTISIG_ADDRESS : undefined,
+    address: isMounted ? multisigAddress : undefined,
     query: {
       enabled: isMounted, // Only fetch when mounted (client-side)
       retry: 1,

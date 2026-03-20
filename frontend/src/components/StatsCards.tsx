@@ -2,19 +2,21 @@
 
 import { useState, useEffect } from 'react'
 import { useReadContract, useBalance } from 'wagmi'
-import { MULTISIG_ADDRESS, MULTISIG_ABI } from '@/lib/contract'
+import { MULTISIG_ABI } from '@/lib/contract'
+import { useMultisig } from '@/context/MultisigContext'
 import { formatRBTC } from '@/lib/utils'
 import { FaWallet, FaUsers, FaCheckCircle, FaFileContract } from 'react-icons/fa'
 
 export function StatsCards() {
   const [isMounted, setIsMounted] = useState(false)
+  const { multisigAddress } = useMultisig()
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
   const { data: ownerCount } = useReadContract({
-    address: isMounted ? MULTISIG_ADDRESS : undefined,
+    address: isMounted ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getOwnerCount',
     query: {
@@ -25,7 +27,7 @@ export function StatsCards() {
   })
 
   const { data: requiredConfirmations } = useReadContract({
-    address: isMounted ? MULTISIG_ADDRESS : undefined,
+    address: isMounted ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'requiredConfirmations',
     query: {
@@ -36,7 +38,7 @@ export function StatsCards() {
   })
 
   const { data: txCount } = useReadContract({
-    address: isMounted ? MULTISIG_ADDRESS : undefined,
+    address: isMounted ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getTransactionCount',
     query: {
@@ -47,7 +49,7 @@ export function StatsCards() {
   })
 
   const { data: balance } = useBalance({
-    address: isMounted ? MULTISIG_ADDRESS : undefined,
+    address: isMounted ? multisigAddress : undefined,
     query: {
       enabled: isMounted,
       retry: 1,

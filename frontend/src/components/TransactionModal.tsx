@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useReadContract } from 'wagmi'
-import { MULTISIG_ADDRESS, MULTISIG_ABI } from '@/lib/contract'
+import { MULTISIG_ABI, normalizeTransaction } from '@/lib/contract'
+import { useMultisig } from '@/context/MultisigContext'
 import { formatRBTC, truncateAddress, getExplorerAddressUrl } from '@/lib/utils'
 import { FaTimes, FaCopy, FaExternalLinkAlt, FaCheckCircle, FaClock } from 'react-icons/fa'
 import toast from 'react-hot-toast'
@@ -15,21 +16,22 @@ interface TransactionModalProps {
 }
 
 export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProps) {
+  const { multisigAddress } = useMultisig()
   const { data: tx } = useReadContract({
-    address: MULTISIG_ADDRESS,
+    address: multisigAddress,
     abi: MULTISIG_ABI,
     functionName: 'getTransaction',
     args: [BigInt(txId)],
   })
 
   const { data: ownerCount } = useReadContract({
-    address: MULTISIG_ADDRESS,
+    address: multisigAddress,
     abi: MULTISIG_ABI,
     functionName: 'getOwnerCount',
   })
 
   const { data: requiredConfirmations } = useReadContract({
-    address: MULTISIG_ADDRESS,
+    address: multisigAddress,
     abi: MULTISIG_ABI,
     functionName: 'requiredConfirmations',
   })
@@ -61,15 +63,7 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
   }
 
   if (!isOpen || !tx) return null
-
-  const txData = tx as any
-  const safeTx = {
-    to: (txData.to || '0x0000000000000000000000000000000000000000') as `0x${string}`,
-    value: (txData.value ?? 0n) as bigint,
-    data: (txData.data || '0x') as `0x${string}`,
-    executed: (txData.executed ?? false) as boolean,
-    numConfirmations: (txData.numConfirmations ?? 0n) as bigint,
-  }
+  const safeTx = normalizeTransaction(tx)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">

@@ -211,6 +211,7 @@ frontend/
 4. **Execute Transaction:**
    - When enough owners have approved (meets required confirmations)
    - The "Execute" button will appear
+   - Make sure the multisig contract itself has enough RBTC to cover the transaction Amount (otherwise `executeTransaction` will revert)
    - Click "Execute" and confirm in MetaMask
 
 ### For Non-Owners
@@ -245,6 +246,7 @@ frontend/
 - Check you have enough RBTC for gas
 - Verify you're an owner of the multisig wallet
 - Check transaction requirements (enough confirmations, not already executed)
+- Also fund the multisig contract address with RBTC (the contract balance must be >= the transaction Amount)
 
 ### "Cannot read properties"
 

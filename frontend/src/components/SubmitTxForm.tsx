@@ -3,11 +3,13 @@
 import { useState } from 'react'
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { parseEther, isAddress } from 'viem'
-import { MULTISIG_ADDRESS, MULTISIG_ABI } from '@/lib/contract'
+import { MULTISIG_ABI } from '@/lib/contract'
+import { useMultisig } from '@/context/MultisigContext'
 import { parseRBTC, isValidAddress, isValidHex } from '@/lib/utils'
 
 export function SubmitTxForm() {
   const { address, isConnected } = useAccount()
+  const { multisigAddress } = useMultisig()
   const [recipient, setRecipient] = useState('')
   const [amount, setAmount] = useState('')
   const [data, setData] = useState('')
@@ -73,7 +75,7 @@ export function SubmitTxForm() {
       }
 
       writeContract({
-        address: MULTISIG_ADDRESS,
+        address: multisigAddress,
         abi: MULTISIG_ABI,
         functionName: 'submitTransaction',
         args: [recipient as `0x${string}`, value, txData],

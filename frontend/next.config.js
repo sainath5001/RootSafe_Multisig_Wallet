@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  turbopack: {},
   reactStrictMode: true,
   // Reduce memory during build (helps on low-RAM machines; "Killed" = OOM)
   productionBrowserSourceMaps: false,

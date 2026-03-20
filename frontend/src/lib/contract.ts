@@ -6,8 +6,12 @@ import type { Abi } from 'viem'
  * Contract configuration
  * Update NEXT_PUBLIC_MULTISIG_ADDRESS in .env.local with your deployed contract address
  */
-export const MULTISIG_ADDRESS = (process.env.NEXT_PUBLIC_MULTISIG_ADDRESS ||
+/** Default contract when user has not deployed / switched wallet */
+export const DEFAULT_MULTISIG_ADDRESS = (process.env.NEXT_PUBLIC_MULTISIG_ADDRESS ||
   '0x3886eC7a6ca3841944a27439126096d6978f8884') as Address
+
+/** @deprecated Use useMultisig().multisigAddress in client components */
+export const MULTISIG_ADDRESS = DEFAULT_MULTISIG_ADDRESS
 
 /**
  * ABI must be an array for wagmi/viem (they use .filter() on it).
@@ -27,4 +31,43 @@ export type Transaction = {
   data: `0x${string}`
   executed: boolean
   numConfirmations: bigint
+}
+
+type TransactionTuple = readonly [Address, bigint, `0x${string}`, boolean, bigint]
+
+export function normalizeTransaction(raw: unknown): Transaction {
+  const zeroAddr = '0x0000000000000000000000000000000000000000' as Address
+  const fallback: Transaction = {
+    to: zeroAddr,
+    value: 0n,
+    data: '0x',
+    executed: false,
+    numConfirmations: 0n,
+  }
+
+  if (!raw) return fallback
+
+  if (Array.isArray(raw)) {
+    const t = raw as unknown as TransactionTuple
+    return {
+      to: (t[0] ?? fallback.to) as Address,
+      value: (t[1] ?? fallback.value) as bigint,
+      data: (t[2] ?? fallback.data) as `0x${string}`,
+      executed: (t[3] ?? fallback.executed) as boolean,
+      numConfirmations: (t[4] ?? fallback.numConfirmations) as bigint,
+    }
+  }
+
+  if (typeof raw === 'object') {
+    const o = raw as any
+    return {
+      to: (o.to ?? fallback.to) as Address,
+      value: (o.value ?? fallback.value) as bigint,
+      data: (o.data ?? fallback.data) as `0x${string}`,
+      executed: (o.executed ?? fallback.executed) as boolean,
+      numConfirmations: (o.numConfirmations ?? fallback.numConfirmations) as bigint,
+    }
+  }
+
+  return fallback
 }

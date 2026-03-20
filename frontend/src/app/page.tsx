@@ -9,7 +9,13 @@ import { SubmitTxForm } from '@/components/SubmitTxForm'
 import { TxListSimple as TxList } from '@/components/TxList'
 import { OwnersList } from '@/components/OwnersList'
 import { WalletDashboard } from '@/components/WalletDashboard'
+import dynamic from 'next/dynamic'
 import { useAccount } from 'wagmi'
+
+const CreateMultisigForm = dynamic(() => import('@/components/CreateMultisigForm').then((m) => m.CreateMultisigForm), {
+  ssr: false,
+  loading: () => null,
+})
 
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false)
@@ -31,6 +37,7 @@ export default function Home() {
           
           {isMounted && isConnected ? (
             <div className="mt-12 space-y-6">
+              <CreateMultisigForm />
               <WalletDashboard />
               <OwnersList />
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useAccount, useReadContract } from 'wagmi'
-import { MULTISIG_ADDRESS, MULTISIG_ABI } from '@/lib/contract'
+import { MULTISIG_ABI, normalizeTransaction } from '@/lib/contract'
+import { useMultisig } from '@/context/MultisigContext'
 import { TransactionItem } from './TransactionItem'
 import { FaSearch, FaFilter } from 'react-icons/fa'
 
 export function TxListSimple() {
   const [isMounted, setIsMounted] = useState(false)
+  const { multisigAddress } = useMultisig()
 
   useEffect(() => {
     setIsMounted(true)
@@ -18,7 +20,7 @@ export function TxListSimple() {
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'executed'>('all')
 
   const { data: txCount } = useReadContract({
-    address: isMounted ? MULTISIG_ADDRESS : undefined,
+    address: isMounted ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getTransactionCount',
     query: {
@@ -27,7 +29,7 @@ export function TxListSimple() {
   })
 
   const { data: ownerCount } = useReadContract({
-    address: isMounted ? MULTISIG_ADDRESS : undefined,
+    address: isMounted ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getOwnerCount',
     query: {
@@ -36,7 +38,7 @@ export function TxListSimple() {
   })
 
   const { data: requiredConfirmations } = useReadContract({
-    address: isMounted ? MULTISIG_ADDRESS : undefined,
+    address: isMounted ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'requiredConfirmations',
     query: {
@@ -45,7 +47,7 @@ export function TxListSimple() {
   })
 
   const { data: isOwner } = useReadContract({
-    address: isMounted ? MULTISIG_ADDRESS : undefined,
+    address: isMounted ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'isOwner',
     args: address ? [address] : undefined,
@@ -191,8 +193,9 @@ function TransactionItemWrapper({
   searchTerm?: string
   filterStatus?: 'all' | 'pending' | 'executed'
 }) {
+  const { multisigAddress: msAddr } = useMultisig()
   const { data: tx, refetch } = useReadContract({
-    address: MULTISIG_ADDRESS,
+    address: msAddr,
     abi: MULTISIG_ABI,
     functionName: 'getTransaction',
     args: [BigInt(txId)],
@@ -205,15 +208,7 @@ function TransactionItemWrapper({
     return <div className="p-4 border border-[#2a2a2a] rounded-lg bg-[#1a1a1a] text-[#a0a0a0]">Loading transaction #{txId}...</div>
   }
 
-  // Ensure all transaction fields are defined
-  const txData = tx as any
-  const safeTx = {
-    to: (txData.to || '0x0000000000000000000000000000000000000000') as `0x${string}`,
-    value: (txData.value ?? 0n) as bigint,
-    data: (txData.data || '0x') as `0x${string}`,
-    executed: (txData.executed ?? false) as boolean,
-    numConfirmations: (txData.numConfirmations ?? 0n) as bigint,
-  }
+  const safeTx = normalizeTransaction(tx)
 
   // Apply filters
   if (filterStatus === 'pending' && safeTx.executed) return null

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useReadContract, useAccount } from 'wagmi'
-import { MULTISIG_ADDRESS, MULTISIG_ABI } from '@/lib/contract'
+import { MULTISIG_ABI } from '@/lib/contract'
+import { useMultisig } from '@/context/MultisigContext'
 import { truncateAddress, getExplorerAddressUrl } from '@/lib/utils'
 import Link from 'next/link'
 import { FaUser, FaCheckCircle, FaCopy } from 'react-icons/fa'
@@ -16,10 +17,11 @@ export function OwnersList() {
   }, [])
 
   const { address: userAddress } = useAccount()
+  const { multisigAddress } = useMultisig()
 
   // Get owner count
   const { data: ownerCount } = useReadContract({
-    address: isMounted ? MULTISIG_ADDRESS : undefined,
+    address: isMounted ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getOwnerCount',
     query: {
@@ -63,9 +65,10 @@ export function OwnersList() {
       ) : (
         <div className="space-y-3">
           {Array.from({ length: ownerCountNum }).map((_, index) => (
-            <OwnerItem 
-              key={index} 
-              index={index} 
+            <OwnerItem
+              key={index}
+              index={index}
+              multisigAddress={multisigAddress}
               userAddress={userAddress}
               onCopy={copyToClipboard}
             />
@@ -76,17 +79,19 @@ export function OwnersList() {
   )
 }
 
-function OwnerItem({ 
-  index, 
+function OwnerItem({
+  index,
+  multisigAddress,
   userAddress,
-  onCopy 
-}: { 
+  onCopy,
+}: {
   index: number
+  multisigAddress: `0x${string}`
   userAddress?: `0x${string}`
   onCopy: (text: string) => void
 }) {
   const { data: ownerAddress } = useReadContract({
-    address: MULTISIG_ADDRESS,
+    address: multisigAddress,
     abi: MULTISIG_ABI,
     functionName: 'owners',
     args: [BigInt(index)],

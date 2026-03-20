@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
-import { MULTISIG_ADDRESS, MULTISIG_ABI, Transaction } from '@/lib/contract'
+import { useBalance, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { MULTISIG_ABI, Transaction } from '@/lib/contract'
+import { useMultisig } from '@/context/MultisigContext'
 import { formatRBTC, truncateAddress } from '@/lib/utils'
 import { FaCheckCircle, FaTimesCircle, FaClock, FaCopy, FaExternalLinkAlt, FaInfoCircle } from 'react-icons/fa'
 import toast from 'react-hot-toast'
@@ -20,10 +21,12 @@ export interface TransactionItemProps {
 
 export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, userAddress, onTransactionUpdate }: TransactionItemProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const { multisigAddress } = useMultisig()
+  const { data: contractBalance } = useBalance({ address: multisigAddress })
 
   // Check if user has confirmed this transaction
   const { data: isConfirmed, refetch: refetchIsConfirmed } = useReadContract({
-    address: MULTISIG_ADDRESS,
+    address: multisigAddress,
     abi: MULTISIG_ABI,
     functionName: 'isConfirmed',
     args: [BigInt(txId), userAddress!],
@@ -37,9 +40,12 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
   const { writeContract: writeRevoke, data: revokeHash } = useWriteContract()
   const { writeContract: writeExecute, data: executeHash } = useWriteContract()
 
-  const { isLoading: isConfirming, isSuccess: isConfirmSuccess } = useWaitForTransactionReceipt({ hash: confirmHash })
-  const { isLoading: isRevoking, isSuccess: isRevokeSuccess } = useWaitForTransactionReceipt({ hash: revokeHash })
-  const { isLoading: isExecuting, isSuccess: isExecuteSuccess } = useWaitForTransactionReceipt({ hash: executeHash })
+  const { isLoading: isConfirming, isSuccess: isConfirmSuccess, error: confirmError } =
+    useWaitForTransactionReceipt({ hash: confirmHash })
+  const { isLoading: isRevoking, isSuccess: isRevokeSuccess, error: revokeError } =
+    useWaitForTransactionReceipt({ hash: revokeHash })
+  const { isLoading: isExecuting, isSuccess: isExecuteSuccess, error: executeError } =
+    useWaitForTransactionReceipt({ hash: executeHash })
 
   // Refetch transaction data when confirmation/revocation/execution completes
   useEffect(() => {
@@ -64,7 +70,26 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
         onTransactionUpdate?.()
       }, 1000)
     }
-  }, [isConfirmSuccess, isRevokeSuccess, isExecuteSuccess, refetchIsConfirmed, onTransactionUpdate])
+    // If a tx reverts, wagmi surfaces the revert reason via `error`.
+    if (confirmError) {
+      toast.error(`Approve failed: ${(confirmError as Error).message}`)
+    }
+    if (revokeError) {
+      toast.error(`Revoke failed: ${(revokeError as Error).message}`)
+    }
+    if (executeError) {
+      toast.error(`Execute failed: ${(executeError as Error).message}`)
+    }
+  }, [
+    isConfirmSuccess,
+    isRevokeSuccess,
+    isExecuteSuccess,
+    confirmError,
+    revokeError,
+    executeError,
+    refetchIsConfirmed,
+    onTransactionUpdate,
+  ])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -72,17 +97,29 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
   }
 
   const handleConfirm = () => {
-    writeConfirm({
-      address: MULTISIG_ADDRESS,
-      abi: MULTISIG_ABI,
-      functionName: 'confirmTransaction',
-      args: [BigInt(txId)],
-    })
+    if (!isOwner) {
+      toast.error('Only owners can approve transactions.')
+      return
+    }
+    if (confirmed) {
+      toast.error('You already approved this transaction.')
+      return
+    }
+    try {
+      writeConfirm({
+        address: multisigAddress,
+        abi: MULTISIG_ABI,
+        functionName: 'confirmTransaction',
+        args: [BigInt(txId)],
+      })
+    } catch (e: any) {
+      toast.error(e?.shortMessage || e?.message || 'Approval failed')
+    }
   }
 
   const handleRevoke = () => {
     writeRevoke({
-      address: MULTISIG_ADDRESS,
+      address: multisigAddress,
       abi: MULTISIG_ABI,
       functionName: 'revokeConfirmation',
       args: [BigInt(txId)],
@@ -90,8 +127,19 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
   }
 
   const handleExecute = () => {
+    if (!canExecute) {
+      const bal = contractBalance?.value
+      if (bal !== undefined && bal < tx.value) {
+        toast.error(
+          `Execute blocked: contract balance (${formatRBTC(bal)} RBTC) < tx value (${formatRBTC(tx.value)} RBTC).`
+        )
+        return
+      }
+      toast.error('Execute blocked: confirmations/threshold not met yet.')
+      return
+    }
     writeExecute({
-      address: MULTISIG_ADDRESS,
+      address: multisigAddress,
       abi: MULTISIG_ABI,
       functionName: 'executeTransaction',
       args: [BigInt(txId)],
@@ -99,7 +147,15 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
   }
 
   const numConfirmations = tx.numConfirmations ?? 0n
-  const canExecute = !tx.executed && numConfirmations >= requiredConfirmations
+  // If `requiredConfirmations` hasn't loaded yet, we currently pass `0n` as a fallback.
+  // In that state, the contract will revert with insufficient confirmations, so we block execution.
+  const contractBalanceWei = contractBalance?.value
+  const canExecute =
+    !tx.executed &&
+    requiredConfirmations > 0n &&
+    numConfirmations >= requiredConfirmations &&
+    contractBalanceWei !== undefined &&
+    contractBalanceWei >= tx.value
   const confirmed = isConfirmed === true
 
   return (
@@ -160,7 +216,7 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
           {!confirmed ? (
             <button
               onClick={handleConfirm}
-              disabled={isConfirming}
+              disabled={isConfirming || confirmed}
               className="px-4 py-2 bg-[#FF6600] text-white text-sm rounded hover:bg-[#E55A00] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center gap-2"
             >
               <FaCheckCircle />
