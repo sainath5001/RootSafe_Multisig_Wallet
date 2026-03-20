@@ -6,6 +6,9 @@ import { Toaster } from 'react-hot-toast'
 export const metadata: Metadata = {
   title: 'Rootstock Multisig Wallet',
   description: 'Multisignature wallet demo for Rootstock (RSK)',
+  icons: {
+    icon: '/rootstock-logo.png',
+  },
 }
 
 export default function RootLayout({
