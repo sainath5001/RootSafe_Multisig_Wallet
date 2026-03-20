@@ -196,6 +196,26 @@ frontend/
 
 ## 📝 Usage Guide
 
+### Create your multisig
+Deploy a new multisig wallet on-chain and set the owners + threshold.
+
+1. **Owners & threshold**
+   - Owner 1 (`0x...`)
+   - Owner 2 (`0x...`)
+   - Owner 3 (`0x...`)
+   - Click **Add owner** to add more owner rows.
+   - Set **Required confirmations (M of N)** (example: `2` for **2 of 3**).
+   - Must be **≥ 1** and **≤ number of non-empty owner addresses**.
+2. **Deploy new multisig**
+   - Click **Deploy new multisig**.
+   - Gas is paid by your connected wallet (example shown in UI: `0xAE7168…`).
+3. **Active multisig contract**
+   - After deployment, the UI shows the **Active multisig contract** address (example from our run):
+     - `0x88cd3c3487fd872f3ad8658b9637bc963a62e059`
+   - Your transactions/approvals will use this active contract address.
+4. **Use default wallet (.env) instead**
+   - If you want to go back to the contract in `.env.local`, use the **Use default wallet (.env)** button in the UI.
+
 ### For Owners
 
 1. **Connect Wallet:** Click "Connect Wallet" and approve in MetaMask
