@@ -87,6 +87,7 @@ graph TB
 - ✅ Configurable required confirmations (M-of-N scheme)
 - ✅ Transaction submission, confirmation, and execution
 - ✅ Confirmation revocation (before execution)
+- ✅ Multisig-controlled owner & threshold management (add/remove/replace owner, change requirement)
 - ✅ Safe ETH/RBTC transfers using `call()`
 - ✅ Reentrancy protection with OpenZeppelin's ReentrancyGuard
 - ✅ Comprehensive event logging
@@ -190,6 +191,10 @@ forge test
 # Deploy to Rootstock Testnet
 # First, load environment variables from .env file
 set -a && source .env && set +a
+
+# IMPORTANT: configure the owners (comma-separated) and threshold
+export OWNERS="0xOwner1,0xOwner2,0xOwner3"
+export REQUIRED_CONFIRMATIONS=2
 
 # Then deploy
 forge script script/DeployMultiSig.s.sol:DeployMultiSig \

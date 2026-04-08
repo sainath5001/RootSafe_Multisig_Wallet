@@ -1,22 +1,19 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useReadContract, useBalance } from 'wagmi'
 import { MULTISIG_ABI } from '@/lib/contract'
 import { useMultisig } from '@/context/MultisigContext'
 import { formatRBTC } from '@/lib/utils'
 import ChartSection from './ChartSection'
+import { useIsMounted } from '@/hooks/useIsMounted'
 
 export function WalletDashboard() {
-  const [isMounted, setIsMounted] = useState(false)
+  const isMounted = useIsMounted()
   const { multisigAddress } = useMultisig()
 
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
   const { data: txCount, error: txCountError } = useReadContract({
-    address: isMounted ? multisigAddress : undefined,
+    address: isMounted && multisigAddress ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getTransactionCount',
     query: {
@@ -27,7 +24,7 @@ export function WalletDashboard() {
   })
 
   const { data: ownerCount, error: ownerCountError } = useReadContract({
-    address: isMounted ? multisigAddress : undefined,
+    address: isMounted && multisigAddress ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getOwnerCount',
     query: {
@@ -38,7 +35,7 @@ export function WalletDashboard() {
   })
 
   const { data: requiredConfirmations, error: requiredConfirmationsError } = useReadContract({
-    address: isMounted ? multisigAddress : undefined,
+    address: isMounted && multisigAddress ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'requiredConfirmations',
     query: {
@@ -49,11 +46,12 @@ export function WalletDashboard() {
   })
 
   const { data: balance, error: balanceError } = useBalance({
-    address: isMounted ? multisigAddress : undefined,
+    address: isMounted && multisigAddress ? multisigAddress : undefined,
     query: {
       enabled: isMounted, // Only fetch when mounted (client-side)
       retry: 1,
       retryDelay: 1000,
+      refetchInterval: 8000,
     },
   })
 

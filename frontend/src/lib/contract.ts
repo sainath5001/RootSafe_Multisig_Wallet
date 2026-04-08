@@ -1,4 +1,4 @@
-import { Address } from 'viem'
+import { Address, isAddress } from 'viem'
 import MultiSigWalletABI from '@/abi/MultiSigWallet.json'
 import type { Abi } from 'viem'
 
@@ -6,12 +6,13 @@ import type { Abi } from 'viem'
  * Contract configuration
  * Update NEXT_PUBLIC_MULTISIG_ADDRESS in .env.local with your deployed contract address
  */
-/** Default contract when user has not deployed / switched wallet */
-export const DEFAULT_MULTISIG_ADDRESS = (process.env.NEXT_PUBLIC_MULTISIG_ADDRESS ||
-  '0x3886eC7a6ca3841944a27439126096d6978f8884') as Address
+/** Env-configured multisig address (required for default mode) */
+export const ENV_MULTISIG_ADDRESS = process.env.NEXT_PUBLIC_MULTISIG_ADDRESS as Address | undefined
 
-/** @deprecated Use useMultisig().multisigAddress in client components */
-export const MULTISIG_ADDRESS = DEFAULT_MULTISIG_ADDRESS
+export function getDefaultMultisigAddress(): Address | null {
+  if (!ENV_MULTISIG_ADDRESS) return null
+  return isAddress(ENV_MULTISIG_ADDRESS) ? (ENV_MULTISIG_ADDRESS as Address) : null
+}
 
 /**
  * ABI must be an array for wagmi/viem (they use .filter() on it).

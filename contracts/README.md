@@ -32,6 +32,7 @@ This multisignature wallet contract allows a group of owners to control a wallet
 - ✅ Configurable required confirmations (M-of-N scheme)
 - ✅ Transaction submission, confirmation, and execution
 - ✅ Confirmation revocation (before execution)
+- ✅ Multisig-controlled owner & threshold management (add/remove/replace owner, change requirement)
 - ✅ Safe ETH/RBTC transfers using `call()`
 - ✅ Reentrancy protection
 - ✅ Comprehensive event logging
@@ -118,6 +119,32 @@ This will:
 - Create ABI files in `out/MultiSigWallet.sol/MultiSigWallet.json`
 
 **ABI Location**: `out/MultiSigWallet.sol/MultiSigWallet.json`
+
+## 👥 Owner / Threshold Management
+
+The contract supports changing owners and the required confirmation threshold **after deployment**, but **only via the multisig itself**.
+
+- Admin functions are protected by `onlyWallet` (`msg.sender == address(this)`), so a single owner cannot call them directly.
+- To use them, submit a transaction where:
+  - `to` = the multisig contract address
+  - `data` = ABI-encoded call to one of:
+    - `addOwner(address)`
+    - `removeOwner(address)`
+    - `replaceOwner(address,address)`
+    - `changeRequirement(uint256)`
+
+Safety rules enforced:
+- `changeRequirement` must satisfy \(1 \le requiredConfirmations \le owners.length\)
+- `removeOwner` is blocked if it would make `requiredConfirmations > owners.length - 1` (prevents permanent lock)
+
+### Data size limit
+
+`submitTransaction` enforces `data.length <= MAX_DATA_BYTES` (24KB) to avoid huge payloads that will exceed practical gas limits.
+
+### Pagination helper
+
+The `transactions` array is unbounded for simplicity. For frontend pagination, use:
+- `getTransactionIds(uint256 start, uint256 count)` to fetch IDs in pages.
 
 The ABI can be used by frontend applications to interact with the deployed contract.
 

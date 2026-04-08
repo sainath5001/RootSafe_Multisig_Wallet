@@ -22,16 +22,16 @@ export interface TransactionItemProps {
 export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, userAddress, onTransactionUpdate }: TransactionItemProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { multisigAddress } = useMultisig()
-  const { data: contractBalance } = useBalance({ address: multisigAddress })
+  const { data: contractBalance } = useBalance({ address: multisigAddress ?? undefined })
 
   // Check if user has confirmed this transaction
   const { data: isConfirmed, refetch: refetchIsConfirmed } = useReadContract({
-    address: multisigAddress,
+    address: multisigAddress ?? undefined,
     abi: MULTISIG_ABI,
     functionName: 'isConfirmed',
     args: [BigInt(txId), userAddress!],
     query: {
-      enabled: !!userAddress,
+      enabled: !!userAddress && !!multisigAddress,
       refetchInterval: 8000, // Poll every 8 seconds
     },
   })
@@ -91,12 +91,20 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
     onTransactionUpdate,
   ])
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    toast.success('Copied to clipboard!')
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      toast.success('Copied to clipboard!')
+    } catch {
+      toast.error('Copy failed')
+    }
   }
 
   const handleConfirm = () => {
+    if (!multisigAddress) {
+      toast.error('No multisig contract configured.')
+      return
+    }
     if (!isOwner) {
       toast.error('Only owners can approve transactions.')
       return
@@ -118,6 +126,10 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
   }
 
   const handleRevoke = () => {
+    if (!multisigAddress) {
+      toast.error('No multisig contract configured.')
+      return
+    }
     writeRevoke({
       address: multisigAddress,
       abi: MULTISIG_ABI,
@@ -127,6 +139,10 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
   }
 
   const handleExecute = () => {
+    if (!multisigAddress) {
+      toast.error('No multisig contract configured.')
+      return
+    }
     if (!canExecute) {
       const bal = contractBalance?.value
       if (bal !== undefined && bal < tx.value) {
@@ -160,10 +176,13 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
 
   return (
     <>
-      <div
-        className={`p-4 border rounded-lg transition-all hover:border-[#FF6600] cursor-pointer ${tx.executed ? 'bg-[#0a2a0a] border-[#00aa00]' : 'bg-[#1a1a1a] border-[#2a2a2a]'
-          }`}
+      <button
+        type="button"
+        className={`w-full text-left p-4 border rounded-lg transition-all hover:border-[#FF6600] cursor-pointer ${
+          tx.executed ? 'bg-[#0a2a0a] border-[#00aa00]' : 'bg-[#1a1a1a] border-[#2a2a2a]'
+        }`}
         onClick={() => setIsModalOpen(true)}
+        aria-label={`Open details for transaction ${txId}`}
       >
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-2">
@@ -195,7 +214,7 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
             )}
           </span>
         </div>
-      </div>
+      </button>
 
       <div className="mt-2 mb-3">
         <p className="text-sm text-[#a0a0a0]">
@@ -253,6 +272,7 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
             <button
               onClick={() => copyToClipboard(confirmHash)}
               className="text-[#FF6600] hover:text-[#FF8533] transition-colors"
+              aria-label="Copy approve transaction hash"
             >
               <FaCopy />
             </button>
@@ -265,6 +285,7 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
             <button
               onClick={() => copyToClipboard(revokeHash)}
               className="text-[#FF8533] hover:text-[#FF6600] transition-colors"
+              aria-label="Copy revoke transaction hash"
             >
               <FaCopy />
             </button>
@@ -277,6 +298,7 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
             <button
               onClick={() => copyToClipboard(executeHash)}
               className="text-[#00aa00] hover:text-[#00cc00] transition-colors"
+              aria-label="Copy execute transaction hash"
             >
               <FaCopy />
             </button>

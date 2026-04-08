@@ -10,28 +10,35 @@ import {
   type ReactNode,
 } from 'react'
 import { type Address, isAddress } from 'viem'
-import { DEFAULT_MULTISIG_ADDRESS } from '@/lib/contract'
+import { getDefaultMultisigAddress } from '@/lib/contract'
 
 const STORAGE_KEY = 'rootsafe_multisig_address'
 
 type MultisigContextValue = {
-  multisigAddress: Address
+  multisigAddress: Address | null
   setMultisigAddress: (addr: Address) => void
   resetToDefaultMultisig: () => void
   hydrated: boolean
+  missingEnvDefault: boolean
 }
 
 const MultisigContext = createContext<MultisigContextValue | null>(null)
 
 export function MultisigProvider({ children }: { children: ReactNode }) {
-  const [multisigAddress, setMultisigAddressState] = useState<Address>(DEFAULT_MULTISIG_ADDRESS)
+  const [multisigAddress, setMultisigAddressState] = useState<Address | null>(getDefaultMultisigAddress())
   const [hydrated, setHydrated] = useState(false)
+  const [missingEnvDefault, setMissingEnvDefault] = useState(false)
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored && isAddress(stored)) {
         setMultisigAddressState(stored as Address)
+        setMissingEnvDefault(false)
+      } else {
+        const d = getDefaultMultisigAddress()
+        setMultisigAddressState(d)
+        setMissingEnvDefault(d === null)
       }
     } catch {
       /* ignore */
@@ -49,7 +56,9 @@ export function MultisigProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const resetToDefaultMultisig = useCallback(() => {
-    setMultisigAddressState(DEFAULT_MULTISIG_ADDRESS)
+    const d = getDefaultMultisigAddress()
+    setMultisigAddressState(d)
+    setMissingEnvDefault(d === null)
     try {
       localStorage.removeItem(STORAGE_KEY)
     } catch {
@@ -63,8 +72,9 @@ export function MultisigProvider({ children }: { children: ReactNode }) {
       setMultisigAddress,
       resetToDefaultMultisig,
       hydrated,
+      missingEnvDefault,
     }),
-    [multisigAddress, setMultisigAddress, resetToDefaultMultisig, hydrated]
+    [multisigAddress, setMultisigAddress, resetToDefaultMultisig, hydrated, missingEnvDefault]
   )
 
   return <MultisigContext.Provider value={value}>{children}</MultisigContext.Provider>

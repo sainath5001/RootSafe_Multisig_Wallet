@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useIsMounted } from '@/hooks/useIsMounted'
 import { useReadContract, useAccount } from 'wagmi'
 import { MULTISIG_ABI } from '@/lib/contract'
 import { useMultisig } from '@/context/MultisigContext'
@@ -10,18 +10,14 @@ import { FaUser, FaCheckCircle, FaCopy } from 'react-icons/fa'
 import toast from 'react-hot-toast'
 
 export function OwnersList() {
-  const [isMounted, setIsMounted] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
+  const isMounted = useIsMounted()
 
   const { address: userAddress } = useAccount()
   const { multisigAddress } = useMultisig()
 
   // Get owner count
   const { data: ownerCount } = useReadContract({
-    address: isMounted ? multisigAddress : undefined,
+    address: isMounted && multisigAddress ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getOwnerCount',
     query: {
@@ -33,8 +29,10 @@ export function OwnersList() {
 
   const copyToClipboard = (text: string) => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
-    navigator.clipboard.writeText(text)
-    toast.success('Address copied!')
+      navigator.clipboard
+        .writeText(text)
+        .then(() => toast.success('Address copied!'))
+        .catch(() => toast.error('Copy failed'))
     }
   }
 
@@ -48,6 +46,21 @@ export function OwnersList() {
             <div className="h-12 bg-[#2a2a2a] rounded"></div>
           </div>
         </div>
+      </div>
+    )
+  }
+
+  if (!multisigAddress) {
+    return (
+      <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+          <FaUser className="text-[#FF6600]" />
+          Owners
+        </h2>
+        <p className="mt-2 text-[#a0a0a0]">
+          No multisig contract configured. Set <code className="text-white">NEXT_PUBLIC_MULTISIG_ADDRESS</code> in{' '}
+          <code className="text-white">frontend/.env.local</code> or deploy a new multisig from the UI.
+        </p>
       </div>
     )
   }
@@ -141,6 +154,7 @@ function OwnerItem({
                 onClick={() => onCopy(ownerAddr)}
                 className="text-[#a0a0a0] hover:text-[#FF6600] transition-colors"
                 title="Copy address"
+                aria-label="Copy owner address"
               >
                 <FaCopy className="text-xs" />
               </button>

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
@@ -39,6 +39,14 @@ contract MultiSigWallet is ReentrancyGuard {
     /// @dev Emitted when an owner is added to the wallet
     /// @param owner The address of the owner that was added
     event OwnerAdded(address indexed owner);
+
+    /// @dev Emitted when an owner is removed from the wallet
+    /// @param owner The address of the owner that was removed
+    event OwnerRemoved(address indexed owner);
+
+    /// @dev Emitted when required confirmations is changed
+    /// @param requiredConfirmations New number of required confirmations
+    event RequirementChanged(uint256 requiredConfirmations);
 
     // ============ Errors ============
 
@@ -80,6 +88,15 @@ contract MultiSigWallet is ReentrancyGuard {
 
     /// @dev Thrown when transaction execution fails
     error TxExecutionFailed();
+
+    /// @dev Thrown when caller is not the wallet itself
+    error OnlyWallet();
+
+    /// @dev Thrown when owner removal would violate threshold constraints
+    error OwnersBelowRequirement();
+
+    /// @dev Thrown when transaction data is too large
+    error DataTooLarge();
 
     // ============ Structs ============
 
@@ -137,6 +154,15 @@ contract MultiSigWallet is ReentrancyGuard {
         _;
     }
 
+    /// @dev Ensures the caller is the wallet itself (enables multisig-controlled admin actions)
+    modifier onlyWallet() {
+        if (msg.sender != address(this)) revert OnlyWallet();
+        _;
+    }
+
+    /// @dev Max calldata size we allow storing as tx.data (24KB)
+    uint256 public constant MAX_DATA_BYTES = 24 * 1024;
+
     // ============ Constructor ============
 
     /// @dev Initializes the multisig wallet with owners and required confirmations
@@ -193,12 +219,85 @@ contract MultiSigWallet is ReentrancyGuard {
         if (_to == address(0)) {
             revert InvalidRecipient();
         }
+        if (_data.length > MAX_DATA_BYTES) revert DataTooLarge();
 
         txId = transactions.length;
 
         transactions.push(Transaction({to: _to, value: _value, data: _data, executed: false, numConfirmations: 0}));
 
         emit SubmitTransaction(txId, msg.sender, _to, _value, _data);
+    }
+
+    // ============ Owner / Requirement Management (multisig-controlled) ============
+
+    /// @notice Add a new owner. Must be executed via the multisig itself.
+    function addOwner(address _owner) external onlyWallet {
+        if (_owner == address(0)) revert ZeroAddressNotAllowed();
+        if (isOwner[_owner]) revert AlreadyOwner();
+        isOwner[_owner] = true;
+        owners.push(_owner);
+        emit OwnerAdded(_owner);
+    }
+
+    /// @notice Remove an owner. Must be executed via the multisig itself.
+    function removeOwner(address _owner) external onlyWallet {
+        if (!isOwner[_owner]) revert NotAnOwner();
+
+        // Ensure the wallet cannot become permanently locked.
+        // After removal, requiredConfirmations must be <= owners.length - 1
+        if (requiredConfirmations > owners.length - 1) revert OwnersBelowRequirement();
+
+        isOwner[_owner] = false;
+
+        // Remove from owners array (swap & pop)
+        for (uint256 i = 0; i < owners.length; i++) {
+            if (owners[i] == _owner) {
+                owners[i] = owners[owners.length - 1];
+                owners.pop();
+                emit OwnerRemoved(_owner);
+                break;
+            }
+        }
+    }
+
+    /// @notice Replace an owner. Must be executed via the multisig itself.
+    function replaceOwner(address _oldOwner, address _newOwner) external onlyWallet {
+        if (!isOwner[_oldOwner]) revert NotAnOwner();
+        if (_newOwner == address(0)) revert ZeroAddressNotAllowed();
+        if (isOwner[_newOwner]) revert AlreadyOwner();
+
+        isOwner[_oldOwner] = false;
+        isOwner[_newOwner] = true;
+
+        for (uint256 i = 0; i < owners.length; i++) {
+            if (owners[i] == _oldOwner) {
+                owners[i] = _newOwner;
+                emit OwnerRemoved(_oldOwner);
+                emit OwnerAdded(_newOwner);
+                break;
+            }
+        }
+    }
+
+    /// @notice Change required confirmations (threshold). Must be executed via the multisig itself.
+    function changeRequirement(uint256 _requiredConfirmations) external onlyWallet {
+        if (_requiredConfirmations == 0 || _requiredConfirmations > owners.length) revert InvalidRequiredConfirmations();
+        requiredConfirmations = _requiredConfirmations;
+        emit RequirementChanged(_requiredConfirmations);
+    }
+
+    /// @notice Paginated transaction IDs for frontend pagination.
+    /// @dev Returns a range [start, start + count), clamped to transactions.length.
+    function getTransactionIds(uint256 start, uint256 count) external view returns (uint256[] memory ids) {
+        uint256 len = transactions.length;
+        if (start >= len) return new uint256[](0);
+        uint256 end = start + count;
+        if (end > len) end = len;
+        uint256 n = end - start;
+        ids = new uint256[](n);
+        for (uint256 i = 0; i < n; i++) {
+            ids[i] = start + i;
+        }
     }
 
     /// @dev Confirms a transaction

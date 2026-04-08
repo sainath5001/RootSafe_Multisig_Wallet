@@ -117,7 +117,7 @@ NEXT_PUBLIC_RPC_URL=https://public-node.testnet.rsk.co
 NEXT_PUBLIC_CHAIN_ID=31
 
 # Your deployed Multisig Wallet contract address
-NEXT_PUBLIC_MULTISIG_ADDRESS=0x3886eC7a6ca3841944a27439126096d6978f8884
+NEXT_PUBLIC_MULTISIG_ADDRESS=0xYourDeployedMultisigAddressHere
 
 # Explorer URL (optional)
 NEXT_PUBLIC_EXPLORER_URL=https://explorer.testnet.rsk.co
@@ -190,6 +190,7 @@ frontend/
 - ✅ View all transactions with status
 - ✅ Approve/Revoke transaction confirmations (owners only)
 - ✅ Execute transactions when enough confirmations (owners only)
+- ✅ Multisig-controlled owner & threshold management (advanced)
 - ✅ Real-time transaction updates (polls every 8 seconds)
 - ✅ Transaction status indicators
 - ✅ Responsive design with Tailwind CSS
@@ -233,6 +234,16 @@ Deploy a new multisig wallet on-chain and set the owners + threshold.
    - The "Execute" button will appear
    - Make sure the multisig contract itself has enough RBTC to cover the transaction Amount (otherwise `executeTransaction` will revert)
    - Click "Execute" and confirm in MetaMask
+
+### Advanced: change owners / threshold after deployment
+The contract supports `addOwner`, `removeOwner`, `replaceOwner`, and `changeRequirement`, but **only via the multisig itself**.
+
+To do this, submit a transaction where:
+- **Recipient** = the multisig contract address (the active contract shown in the UI)
+- **Amount** = `0`
+- **Data** = ABI-encoded call to the admin function you want (advanced; easiest via a script/console)
+
+This design ensures no single owner can unilaterally change owners/threshold.
 
 ### For Non-Owners
 

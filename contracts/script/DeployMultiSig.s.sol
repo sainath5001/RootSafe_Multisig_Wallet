@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 import {Script, console} from "forge-std/Script.sol";
 import {MultiSigWallet} from "../src/MultiSigWallet.sol";
@@ -32,12 +32,8 @@ contract DeployMultiSig is Script {
                 owners[i] = vm.parseAddress(ownerStrings[i]);
             }
         } else {
-            // Default: Use test addresses
-            // NOTE: In production, always set OWNERS environment variable with real addresses
-            owners = new address[](3);
-            owners[0] = address(0x742D35CC6634c0532925A3b844BC9E7595F0BEb0); // Example owner 1
-            owners[1] = address(0x8BA1f109551Bd432803012645aaC136c22C929E0); // Example owner 2
-            owners[2] = address(0x1234567890123456789012345678901234567890); // Example owner 3
+            // No default hardcoded owners. Force explicit configuration.
+            revert("OWNERS env var is required (comma-separated addresses)");
         }
 
         // Read required confirmations from environment or use default

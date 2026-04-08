@@ -10,8 +10,7 @@ export function formatRBTC(wei: bigint | string | undefined | null): string {
   try {
     const value = typeof wei === 'string' ? BigInt(wei) : wei
     return formatEther(value)
-  } catch (error) {
-    console.error('Error formatting RBTC:', error)
+  } catch {
     return '0'
   }
 }

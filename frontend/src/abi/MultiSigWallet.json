@@ -21,6 +21,45 @@
   },
   {
     "type": "function",
+    "name": "MAX_DATA_BYTES",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "addOwner",
+    "inputs": [
+      {
+        "name": "_owner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "changeRequirement",
+    "inputs": [
+      {
+        "name": "_requiredConfirmations",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "confirmTransaction",
     "inputs": [
       {
@@ -136,6 +175,30 @@
   },
   {
     "type": "function",
+    "name": "getTransactionIds",
+    "inputs": [
+      {
+        "name": "start",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "count",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "ids",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "isConfirmed",
     "inputs": [
       {
@@ -195,6 +258,37 @@
       }
     ],
     "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "removeOwner",
+    "inputs": [
+      {
+        "name": "_owner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "replaceOwner",
+    "inputs": [
+      {
+        "name": "_oldOwner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "_newOwner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
     "type": "function",
@@ -355,6 +449,32 @@
   },
   {
     "type": "event",
+    "name": "OwnerRemoved",
+    "inputs": [
+      {
+        "name": "owner",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "RequirementChanged",
+    "inputs": [
+      {
+        "name": "requiredConfirmations",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "RevokeConfirmation",
     "inputs": [
       {
@@ -416,6 +536,11 @@
   },
   {
     "type": "error",
+    "name": "DataTooLarge",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "InsufficientConfirmations",
     "inputs": []
   },
@@ -437,6 +562,16 @@
   {
     "type": "error",
     "name": "NotOwner",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "OnlyWallet",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "OwnersBelowRequirement",
     "inputs": []
   },
   {

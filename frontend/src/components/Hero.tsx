@@ -1,16 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { RootstockLogo } from './RootstockLogo'
 import { ConnectButton } from './ConnectButton'
 import { useAccount } from 'wagmi'
+import { useIsMounted } from '@/hooks/useIsMounted'
 
 export function Hero() {
-  const [isMounted, setIsMounted] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
+  const isMounted = useIsMounted()
 
   const { isConnected } = useAccount()
 

@@ -1,15 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useAccount, useConnect, useDisconnect, useBalance } from 'wagmi'
 import { formatRBTC } from '@/lib/utils'
+import { useIsMounted } from '@/hooks/useIsMounted'
 
 export function ConnectButton() {
-  const [isMounted, setIsMounted] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
+  const isMounted = useIsMounted()
 
   const { address, isConnected } = useAccount()
   const { connect, connectors, isPending } = useConnect()

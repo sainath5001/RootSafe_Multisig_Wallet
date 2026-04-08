@@ -18,48 +18,33 @@ interface TransactionModalProps {
 export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProps) {
   const { multisigAddress } = useMultisig()
   const { data: tx } = useReadContract({
-    address: multisigAddress,
+    address: multisigAddress ?? undefined,
     abi: MULTISIG_ABI,
     functionName: 'getTransaction',
     args: [BigInt(txId)],
   })
 
   const { data: ownerCount } = useReadContract({
-    address: multisigAddress,
+    address: multisigAddress ?? undefined,
     abi: MULTISIG_ABI,
     functionName: 'getOwnerCount',
   })
 
   const { data: requiredConfirmations } = useReadContract({
-    address: multisigAddress,
+    address: multisigAddress ?? undefined,
     abi: MULTISIG_ABI,
     functionName: 'requiredConfirmations',
   })
 
-  const [confirmedOwners, setConfirmedOwners] = useState<string[]>([])
+  // Note: owner-by-owner confirmation display is not implemented yet.
 
-  useEffect(() => {
-    if (ownerCount && tx) {
-      const fetchConfirmations = async () => {
-        const confirmed: string[] = []
-        const count = Number(ownerCount)
-        for (let i = 0; i < count; i++) {
-          try {
-            // We'd need to check each owner - simplified for now
-            // In a real implementation, you'd query isConfirmed for each owner
-          } catch (e) {
-            // Ignore errors
-          }
-        }
-        setConfirmedOwners(confirmed)
-      }
-      fetchConfirmations()
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      toast.success('Copied to clipboard!')
+    } catch {
+      toast.error('Copy failed')
     }
-  }, [ownerCount, tx, txId])
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    toast.success('Copied to clipboard!')
   }
 
   if (!isOpen || !tx) return null
@@ -73,6 +58,7 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
           <button
             onClick={onClose}
             className="text-[#a0a0a0] hover:text-white transition-colors"
+            aria-label="Close transaction details"
           >
             <FaTimes size={24} />
           </button>
@@ -105,6 +91,7 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
               <button
                 onClick={() => copyToClipboard(safeTx.to)}
                 className="text-[#FF6600] hover:text-[#FF8533] transition-colors"
+                aria-label="Copy recipient address"
               >
                 <FaCopy />
               </button>
@@ -160,6 +147,7 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
               <button
                 onClick={() => copyToClipboard(txId.toString())}
                 className="text-[#FF6600] hover:text-[#FF8533] transition-colors"
+                aria-label="Copy transaction id"
               >
                 <FaCopy />
               </button>

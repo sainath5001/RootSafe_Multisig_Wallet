@@ -1,26 +1,23 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useAccount, useReadContract } from 'wagmi'
 import { MULTISIG_ABI, normalizeTransaction } from '@/lib/contract'
 import { useMultisig } from '@/context/MultisigContext'
 import { TransactionItem } from './TransactionItem'
 import { FaSearch, FaFilter } from 'react-icons/fa'
+import { useIsMounted } from '@/hooks/useIsMounted'
 
 export function TxListSimple() {
-  const [isMounted, setIsMounted] = useState(false)
-  const { multisigAddress } = useMultisig()
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
+  const isMounted = useIsMounted()
+  const { multisigAddress, missingEnvDefault } = useMultisig()
 
   const { address, isConnected } = useAccount()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'executed'>('all')
 
   const { data: txCount } = useReadContract({
-    address: isMounted ? multisigAddress : undefined,
+    address: isMounted && multisigAddress ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getTransactionCount',
     query: {
@@ -29,7 +26,7 @@ export function TxListSimple() {
   })
 
   const { data: ownerCount } = useReadContract({
-    address: isMounted ? multisigAddress : undefined,
+    address: isMounted && multisigAddress ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'getOwnerCount',
     query: {
@@ -38,7 +35,7 @@ export function TxListSimple() {
   })
 
   const { data: requiredConfirmations } = useReadContract({
-    address: isMounted ? multisigAddress : undefined,
+    address: isMounted && multisigAddress ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'requiredConfirmations',
     query: {
@@ -47,7 +44,7 @@ export function TxListSimple() {
   })
 
   const { data: isOwner } = useReadContract({
-    address: isMounted ? multisigAddress : undefined,
+    address: isMounted && multisigAddress ? multisigAddress : undefined,
     abi: MULTISIG_ABI,
     functionName: 'isOwner',
     args: address ? [address] : undefined,
@@ -90,6 +87,18 @@ export function TxListSimple() {
       <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
         <h2 className="text-xl font-bold mb-4 text-white">Transactions</h2>
         <p className="text-[#a0a0a0]">Please connect your wallet to view transactions.</p>
+      </div>
+    )
+  }
+
+  if (!multisigAddress) {
+    return (
+      <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+        <h2 className="text-xl font-bold mb-4 text-white">Transactions</h2>
+        <p className="text-[#a0a0a0]">
+          No multisig contract configured. Set <code className="text-white">NEXT_PUBLIC_MULTISIG_ADDRESS</code> in{' '}
+          <code className="text-white">frontend/.env.local</code> or deploy a new multisig from the UI.
+        </p>
       </div>
     )
   }
@@ -195,11 +204,12 @@ function TransactionItemWrapper({
 }) {
   const { multisigAddress: msAddr } = useMultisig()
   const { data: tx, refetch } = useReadContract({
-    address: msAddr,
+    address: msAddr ?? undefined,
     abi: MULTISIG_ABI,
     functionName: 'getTransaction',
     args: [BigInt(txId)],
     query: {
+      enabled: !!msAddr,
       refetchInterval: 8000, // Poll every 8 seconds
     },
   })

@@ -35,6 +35,10 @@ export function SubmitTxForm() {
       setValidationError('Please connect your wallet first')
       return
     }
+    if (!multisigAddress) {
+      setValidationError('No multisig contract configured. Set NEXT_PUBLIC_MULTISIG_ADDRESS or deploy a new multisig.')
+      return
+    }
 
     // Validate recipient address
     if (!recipient.trim()) {
@@ -83,7 +87,6 @@ export function SubmitTxForm() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error submitting transaction'
       setValidationError(errorMessage)
-      console.error('Error submitting transaction:', err)
     }
   }
 
@@ -101,10 +104,11 @@ export function SubmitTxForm() {
       <h2 className="text-xl font-bold mb-4 text-white">Submit Transaction</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-[#a0a0a0] mb-1">
+          <label htmlFor="submitTxRecipient" className="block text-sm font-medium text-[#a0a0a0] mb-1">
             Recipient Address
           </label>
           <input
+            id="submitTxRecipient"
             type="text"
             value={recipient}
             onChange={(e) => setRecipient(e.target.value)}
@@ -114,10 +118,11 @@ export function SubmitTxForm() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#a0a0a0] mb-1">
+          <label htmlFor="submitTxAmount" className="block text-sm font-medium text-[#a0a0a0] mb-1">
             Amount (RBTC)
           </label>
           <input
+            id="submitTxAmount"
             type="text"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
@@ -128,10 +133,11 @@ export function SubmitTxForm() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#a0a0a0] mb-1">
+          <label htmlFor="submitTxData" className="block text-sm font-medium text-[#a0a0a0] mb-1">
             Data (Optional - Hex string)
           </label>
           <input
+            id="submitTxData"
             type="text"
             value={data}
             onChange={(e) => setData(e.target.value)}

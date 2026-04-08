@@ -5,7 +5,7 @@ import { useAccount, useDeployContract, useWaitForTransactionReceipt } from 'wag
 import { getAddress, isAddress, type Address } from 'viem'
 import { MULTISIG_ABI } from '@/lib/contract'
 import { useMultisig } from '@/context/MultisigContext'
-import { DEFAULT_MULTISIG_ADDRESS } from '@/lib/contract'
+import { getDefaultMultisigAddress } from '@/lib/contract'
 import toast from 'react-hot-toast'
 import { FaPlus, FaTrash, FaCopy } from 'react-icons/fa'
 
@@ -33,7 +33,7 @@ function parseOwners(raw: string[]): { ok: true; owners: Address[] } | { ok: fal
 
 export function CreateMultisigForm() {
   const { address, isConnected } = useAccount()
-  const { multisigAddress, setMultisigAddress, resetToDefaultMultisig, hydrated } = useMultisig()
+  const { multisigAddress, setMultisigAddress, resetToDefaultMultisig, hydrated, missingEnvDefault } = useMultisig()
   const [ownerRows, setOwnerRows] = useState<string[]>(['', '', ''])
   const [requiredStr, setRequiredStr] = useState('2')
   const [deployBytecode, setDeployBytecode] = useState<`0x${string}` | null>(null)
@@ -108,8 +108,12 @@ export function CreateMultisigForm() {
   const setRow = (i: number, v: string) =>
     setOwnerRows((r) => r.map((x, j) => (j === i ? v : x)))
 
+  const defaultAddr = getDefaultMultisigAddress()
   const usingCustom =
-    hydrated && multisigAddress.toLowerCase() !== DEFAULT_MULTISIG_ADDRESS.toLowerCase()
+    hydrated &&
+    !!multisigAddress &&
+    !!defaultAddr &&
+    multisigAddress.toLowerCase() !== defaultAddr.toLowerCase()
 
   if (!isConnected || !hydrated) return null
 
@@ -124,15 +128,18 @@ export function CreateMultisigForm() {
       <div className="mb-4 p-3 rounded-lg bg-black border border-[#2a2a2a]">
         <p className="text-xs text-[#a0a0a0] mb-1">Active multisig contract</p>
         <div className="flex flex-wrap items-center gap-2">
-          <code className="text-[#FF6600] text-sm break-all">{multisigAddress}</code>
+          <code className="text-[#FF6600] text-sm break-all">{multisigAddress ?? 'Not set'}</code>
           <button
             type="button"
             onClick={() => {
-              navigator.clipboard.writeText(multisigAddress)
-              toast.success('Copied')
+              if (!multisigAddress) return
+              navigator.clipboard
+                .writeText(multisigAddress)
+                .then(() => toast.success('Copied'))
+                .catch(() => toast.error('Copy failed'))
             }}
             className="text-[#FF6600] p-1"
-            aria-label="Copy address"
+            aria-label="Copy active multisig address"
           >
             <FaCopy />
           </button>
@@ -148,6 +155,12 @@ export function CreateMultisigForm() {
           >
             Use default wallet (.env) instead
           </button>
+        )}
+        {missingEnvDefault && (
+          <p className="mt-2 text-xs text-[#a0a0a0]">
+            Default contract is not configured. Set <code className="text-white">NEXT_PUBLIC_MULTISIG_ADDRESS</code> in{' '}
+            <code className="text-white">frontend/.env.local</code>, or deploy a new multisig above.
+          </p>
         )}
       </div>
 
@@ -184,8 +197,11 @@ export function CreateMultisigForm() {
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-semibold text-white mb-1">Required confirmations (M of N)</label>
+        <label htmlFor="createMultisigRequired" className="block text-sm font-semibold text-white mb-1">
+          Required confirmations (M of N)
+        </label>
         <input
+          id="createMultisigRequired"
           type="number"
           min={1}
           max={ownerRows.filter((s) => s.trim()).length || 99}
