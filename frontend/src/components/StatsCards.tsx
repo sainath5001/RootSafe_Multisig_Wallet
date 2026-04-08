@@ -59,7 +59,7 @@ export function StatsCards() {
       value: balance?.value !== undefined ? formatRBTC(balance.value) : '0',
       unit: 'RBTC',
       icon: FaWallet,
-      color: 'text-[#FF6600]',
+      color: 'text-rootstock-orange',
     },
     {
       label: 'Total Owners',
@@ -91,7 +91,7 @@ export function StatsCards() {
         return (
           <div
             key={index}
-            className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 hover:border-[#FF6600] transition-all duration-300 hover:shadow-lg hover:shadow-[#FF6600]/10"
+            className="bg-rootstock-card rounded-lg p-6 hover:border-rootstock-orange transition-all duration-300 hover:shadow-lg hover:shadow-[var(--rootstock-orange)]/10"
           >
             <div className="flex items-center justify-between mb-4">
               <div className={`${stat.color} text-2xl`}>
@@ -99,10 +99,10 @@ export function StatsCards() {
               </div>
             </div>
             <div>
-              <p className="text-[#a0a0a0] text-sm mb-1">{stat.label}</p>
+              <p className="text-rootstock-muted text-sm mb-1">{stat.label}</p>
               <p className="text-white text-2xl font-bold">
                 {stat.value}
-                {stat.unit && <span className="text-[#a0a0a0] text-lg ml-1">{stat.unit}</span>}
+                {stat.unit && <span className="text-rootstock-muted text-lg ml-1">{stat.unit}</span>}
               </p>
             </div>
           </div>

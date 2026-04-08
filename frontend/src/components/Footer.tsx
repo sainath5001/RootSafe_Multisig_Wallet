@@ -14,17 +14,17 @@ export function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-black border-t border-[#2a2a2a] mt-auto">
+    <footer className="bg-black border-t border-rootstock mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* About Section */}
           <div>
             <h3 className="text-white font-bold text-lg mb-4">Rootstock Multisig</h3>
-            <p className="text-[#a0a0a0] text-sm mb-4">
+            <p className="text-rootstock-muted text-sm mb-4">
               A secure multisignature wallet built on Rootstock (RSK), the Bitcoin DeFi Layer.
             </p>
-            <p className="text-[#a0a0a0] text-sm flex items-center gap-2">
-              Built with <FaHeart className="text-[#FF6600]" /> for Rootstock
+            <p className="text-rootstock-muted text-sm flex items-center gap-2">
+              Built with <FaHeart className="text-rootstock-orange" /> for Rootstock
             </p>
           </div>
 
@@ -37,7 +37,7 @@ export function Footer() {
                   href="https://rootstock.io"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#a0a0a0] hover:text-[#FF6600] text-sm flex items-center gap-2 transition-colors"
+                  className="text-rootstock-muted hover:text-rootstock-orange text-sm flex items-center gap-2 transition-colors"
                 >
                   <FaExternalLinkAlt className="text-xs" />
                   Rootstock Website
@@ -48,7 +48,7 @@ export function Footer() {
                   href="https://developers.rsk.co"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#a0a0a0] hover:text-[#FF6600] text-sm flex items-center gap-2 transition-colors"
+                  className="text-rootstock-muted hover:text-rootstock-orange text-sm flex items-center gap-2 transition-colors"
                 >
                   <FaBook className="text-xs" />
                   Documentation
@@ -59,7 +59,7 @@ export function Footer() {
                   href="https://explorer.testnet.rsk.co"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#a0a0a0] hover:text-[#FF6600] text-sm flex items-center gap-2 transition-colors"
+                  className="text-rootstock-muted hover:text-rootstock-orange text-sm flex items-center gap-2 transition-colors"
                 >
                   <FaExternalLinkAlt className="text-xs" />
                   Block Explorer
@@ -77,7 +77,7 @@ export function Footer() {
                   href="https://github.com/rootstock"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#a0a0a0] hover:text-[#FF6600] text-sm flex items-center gap-2 transition-colors"
+                  className="text-rootstock-muted hover:text-rootstock-orange text-sm flex items-center gap-2 transition-colors"
                 >
                   <FaGithub className="text-xs" />
                   GitHub
@@ -88,7 +88,7 @@ export function Footer() {
                   href="https://twitter.com/rootstock_io"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#a0a0a0] hover:text-[#FF6600] text-sm flex items-center gap-2 transition-colors"
+                  className="text-rootstock-muted hover:text-rootstock-orange text-sm flex items-center gap-2 transition-colors"
                 >
                   <FaTwitter className="text-xs" />
                   Twitter
@@ -99,7 +99,7 @@ export function Footer() {
                   href="https://discord.gg/rootstock"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#a0a0a0] hover:text-[#FF6600] text-sm flex items-center gap-2 transition-colors"
+                  className="text-rootstock-muted hover:text-rootstock-orange text-sm flex items-center gap-2 transition-colors"
                 >
                   <FaDiscord className="text-xs" />
                   Discord
@@ -115,7 +115,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/about"
-                  className="text-[#a0a0a0] hover:text-[#FF6600] text-sm transition-colors"
+                  className="text-rootstock-muted hover:text-rootstock-orange text-sm transition-colors"
                 >
                   About
                 </Link>
@@ -123,7 +123,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/faq"
-                  className="text-[#a0a0a0] hover:text-[#FF6600] text-sm transition-colors"
+                  className="text-rootstock-muted hover:text-rootstock-orange text-sm transition-colors"
                 >
                   FAQ
                 </Link>
@@ -131,7 +131,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/docs"
-                  className="text-[#a0a0a0] hover:text-[#FF6600] text-sm transition-colors"
+                  className="text-rootstock-muted hover:text-rootstock-orange text-sm transition-colors"
                 >
                   Documentation
                 </Link>
@@ -139,7 +139,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/contact"
-                  className="text-[#a0a0a0] hover:text-[#FF6600] text-sm transition-colors"
+                  className="text-rootstock-muted hover:text-rootstock-orange text-sm transition-colors"
                 >
                   Contact
                 </Link>
@@ -149,13 +149,13 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-8 pt-8 border-t border-[#2a2a2a]">
+        <div className="mt-8 pt-8 border-t border-rootstock">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-[#a0a0a0] text-sm">
+            <p className="text-rootstock-muted text-sm">
               © {currentYear} Rootstock Multisig Wallet. All rights reserved.
             </p>
-            <p className="text-[#a0a0a0] text-sm">
-              Powered by <span className="text-[#FF6600]">Rootstock (RSK)</span>
+            <p className="text-rootstock-muted text-sm">
+              Powered by <span className="text-rootstock-orange">Rootstock (RSK)</span>
             </p>
           </div>
         </div>

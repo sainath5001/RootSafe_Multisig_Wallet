@@ -52,12 +52,12 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-[#1a1a1a] border-b border-[#2a2a2a] p-6 flex justify-between items-center">
+      <div className="bg-rootstock-panel border border-rootstock rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-rootstock-panel border-b border-rootstock p-6 flex justify-between items-center">
           <h2 className="text-2xl font-bold text-white">Transaction #{txId} Details</h2>
           <button
             onClick={onClose}
-            className="text-[#a0a0a0] hover:text-white transition-colors"
+            className="text-rootstock-muted hover:text-white transition-colors"
             aria-label="Close transaction details"
           >
             <FaTimes size={24} />
@@ -67,7 +67,7 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
         <div className="p-6 space-y-6">
           {/* Status */}
           <div>
-            <h3 className="text-sm text-[#a0a0a0] mb-2">Status</h3>
+            <h3 className="text-sm text-rootstock-muted mb-2">Status</h3>
             <div className="flex items-center gap-2">
               {safeTx.executed ? (
                 <>
@@ -76,8 +76,8 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
                 </>
               ) : (
                 <>
-                  <FaClock className="text-[#FF6600]" />
-                  <span className="text-[#FF6600] font-semibold">Pending</span>
+                  <FaClock className="text-rootstock-orange" />
+                  <span className="text-rootstock-orange font-semibold">Pending</span>
                 </>
               )}
             </div>
@@ -85,12 +85,12 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
 
           {/* Recipient */}
           <div>
-            <h3 className="text-sm text-[#a0a0a0] mb-2">Recipient Address</h3>
+            <h3 className="text-sm text-rootstock-muted mb-2">Recipient Address</h3>
             <div className="flex items-center gap-2">
               <code className="text-white font-mono text-sm break-all">{safeTx.to}</code>
               <button
                 onClick={() => copyToClipboard(safeTx.to)}
-                className="text-[#FF6600] hover:text-[#FF8533] transition-colors"
+                className="text-rootstock-orange hover:underline transition-colors"
                 aria-label="Copy recipient address"
               >
                 <FaCopy />
@@ -99,7 +99,7 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
                 href={getExplorerAddressUrl(safeTx.to)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#FF6600] hover:text-[#FF8533] transition-colors"
+                className="text-rootstock-orange hover:underline transition-colors"
               >
                 <FaExternalLinkAlt />
               </Link>
@@ -108,7 +108,7 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
 
           {/* Amount */}
           <div>
-            <h3 className="text-sm text-[#a0a0a0] mb-2">Amount</h3>
+            <h3 className="text-sm text-rootstock-muted mb-2">Amount</h3>
             <p className="text-white text-xl font-semibold">
               {formatRBTC(safeTx.value)} RBTC
             </p>
@@ -116,12 +116,12 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
 
           {/* Confirmations */}
           <div>
-            <h3 className="text-sm text-[#a0a0a0] mb-2">
+            <h3 className="text-sm text-rootstock-muted mb-2">
               Confirmations: {safeTx.numConfirmations.toString()} / {requiredConfirmations?.toString() || '0'}
             </h3>
-            <div className="h-3 bg-[#2a2a2a] rounded-full overflow-hidden">
+            <div className="h-3 bg-[var(--rootstock-gray)] rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#FF6600] transition-all"
+                className="h-full bg-rootstock-orange transition-all"
                 style={{
                   width: `${Math.min((Number(safeTx.numConfirmations) / Number(requiredConfirmations || 1)) * 100, 100)}%`,
                 }}
@@ -131,9 +131,9 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
 
           {/* Transaction Data */}
           <div>
-            <h3 className="text-sm text-[#a0a0a0] mb-2">Transaction Data</h3>
-            <div className="bg-[#0a0a0a] border border-[#2a2a2a] rounded p-3">
-              <code className="text-[#a0a0a0] text-xs break-all">
+            <h3 className="text-sm text-rootstock-muted mb-2">Transaction Data</h3>
+            <div className="bg-rootstock-surface border border-rootstock rounded p-3">
+              <code className="text-rootstock-muted text-xs break-all">
                 {safeTx.data === '0x' || safeTx.data.length <= 2 ? 'No data (simple transfer)' : safeTx.data}
               </code>
             </div>
@@ -141,12 +141,12 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
 
           {/* Transaction ID */}
           <div>
-            <h3 className="text-sm text-[#a0a0a0] mb-2">Transaction ID</h3>
+            <h3 className="text-sm text-rootstock-muted mb-2">Transaction ID</h3>
             <div className="flex items-center gap-2">
               <code className="text-white font-mono text-sm">{txId}</code>
               <button
                 onClick={() => copyToClipboard(txId.toString())}
-                className="text-[#FF6600] hover:text-[#FF8533] transition-colors"
+                className="text-rootstock-orange hover:underline transition-colors"
                 aria-label="Copy transaction id"
               >
                 <FaCopy />

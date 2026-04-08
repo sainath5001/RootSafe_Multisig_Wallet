@@ -38,12 +38,12 @@ export function OwnersList() {
 
   if (!isMounted) {
     return (
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+      <div className="bg-rootstock-card p-6 rounded-lg">
         <div className="animate-pulse">
-          <div className="h-6 bg-[#2a2a2a] rounded w-32 mb-4"></div>
+          <div className="h-6 bg-rootstock-muted rounded w-32 mb-4"></div>
           <div className="space-y-2">
-            <div className="h-12 bg-[#2a2a2a] rounded"></div>
-            <div className="h-12 bg-[#2a2a2a] rounded"></div>
+            <div className="h-12 bg-rootstock-muted rounded"></div>
+            <div className="h-12 bg-rootstock-muted rounded"></div>
           </div>
         </div>
       </div>
@@ -52,12 +52,12 @@ export function OwnersList() {
 
   if (!multisigAddress) {
     return (
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+      <div className="bg-rootstock-card p-6 rounded-lg">
         <h2 className="text-xl font-bold text-white flex items-center gap-2">
-          <FaUser className="text-[#FF6600]" />
+          <FaUser className="text-rootstock-orange" />
           Owners
         </h2>
-        <p className="mt-2 text-[#a0a0a0]">
+        <p className="mt-2 text-rootstock-muted">
           No multisig contract configured. Set <code className="text-white">NEXT_PUBLIC_MULTISIG_ADDRESS</code> in{' '}
           <code className="text-white">frontend/.env.local</code> or deploy a new multisig from the UI.
         </p>
@@ -66,15 +66,15 @@ export function OwnersList() {
   }
 
   return (
-    <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+    <div className="bg-rootstock-card p-6 rounded-lg">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-white flex items-center gap-2">
-          <FaUser className="text-[#FF6600]" />
+          <FaUser className="text-rootstock-orange" />
           Owners ({ownerCountNum})
         </h2>
       </div>
       {ownerCountNum === 0 ? (
-        <p className="text-[#a0a0a0]">No owners found.</p>
+        <p className="text-rootstock-muted">No owners found.</p>
       ) : (
         <div className="space-y-3">
           {Array.from({ length: ownerCountNum }).map((_, index) => (
@@ -112,12 +112,12 @@ function OwnerItem({
 
   if (!ownerAddress || typeof ownerAddress !== 'string') {
     return (
-      <div className="p-3 border border-[#2a2a2a] rounded-lg bg-[#1a1a1a] animate-pulse">
+      <div className="p-3 border border-rootstock rounded-lg bg-rootstock-panel animate-pulse">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#2a2a2a]"></div>
+          <div className="w-10 h-10 rounded-full bg-[var(--rootstock-gray)]"></div>
           <div className="flex-1">
-            <div className="h-4 bg-[#2a2a2a] rounded w-32 mb-2"></div>
-            <div className="h-3 bg-[#2a2a2a] rounded w-24"></div>
+            <div className="h-4 bg-[var(--rootstock-gray)] rounded w-32 mb-2"></div>
+            <div className="h-3 bg-[var(--rootstock-gray)] rounded w-24"></div>
           </div>
         </div>
       </div>
@@ -129,13 +129,13 @@ function OwnerItem({
 
   return (
     <div
-      className={`p-4 border rounded-lg transition-all hover:border-[#FF6600] ${
-        isCurrentUser ? 'bg-[#2a1a00] border-[#FF6600]' : 'bg-[#1a1a1a] border-[#2a2a2a]'
+      className={`p-4 border rounded-lg transition-all hover:border-[var(--rootstock-orange)] ${
+        isCurrentUser ? 'bg-rootstock-warning border-[var(--rootstock-orange)]' : 'bg-rootstock-panel border-rootstock'
       }`}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#FF6600] flex items-center justify-center text-sm font-semibold text-white">
+          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-rootstock-orange flex items-center justify-center text-sm font-semibold text-white">
             {index + 1}
           </div>
           <div>
@@ -145,14 +145,14 @@ function OwnerItem({
                   href={getExplorerAddressUrl(ownerAddr)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#FF6600] hover:text-[#FF8533] hover:underline transition-colors"
+                  className="text-rootstock-orange hover:underline transition-colors"
                 >
                   {truncateAddress(ownerAddr)}
                 </Link>
               </p>
               <button
                 onClick={() => onCopy(ownerAddr)}
-                className="text-[#a0a0a0] hover:text-[#FF6600] transition-colors"
+                className="text-rootstock-muted hover:text-rootstock-orange transition-colors"
                 title="Copy address"
                 aria-label="Copy owner address"
               >
@@ -161,14 +161,14 @@ function OwnerItem({
             </div>
             {isCurrentUser && (
               <div className="flex items-center gap-1 mt-1">
-                <FaCheckCircle className="text-[#FF6600] text-xs" />
-                <p className="text-xs text-[#FF6600] font-semibold">You (Current User)</p>
+                <FaCheckCircle className="text-rootstock-orange text-xs" />
+                <p className="text-xs text-rootstock-orange font-semibold">You (Current User)</p>
               </div>
             )}
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xs text-[#a0a0a0]">Owner #{index + 1}</p>
+          <p className="text-xs text-rootstock-muted">Owner #{index + 1}</p>
         </div>
       </div>
     </div>

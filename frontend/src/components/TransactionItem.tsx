@@ -178,8 +178,8 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
     <>
       <button
         type="button"
-        className={`w-full text-left p-4 border rounded-lg transition-all hover:border-[#FF6600] cursor-pointer ${
-          tx.executed ? 'bg-[#0a2a0a] border-[#00aa00]' : 'bg-[#1a1a1a] border-[#2a2a2a]'
+        className={`w-full text-left p-4 border rounded-lg transition-all hover:border-[var(--rootstock-orange)] cursor-pointer ${
+          tx.executed ? 'bg-rootstock-success-soft border-rootstock-success' : 'bg-rootstock-panel border-rootstock'
         }`}
         onClick={() => setIsModalOpen(true)}
         aria-label={`Open details for transaction ${txId}`}
@@ -187,20 +187,20 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-2">
             <p className="font-semibold text-white">Transaction #{txId}</p>
-            <FaInfoCircle className="text-[#FF6600] text-xs" />
+            <FaInfoCircle className="text-rootstock-orange text-xs" />
           </div>
-          <p className="text-sm text-[#a0a0a0]">
+          <p className="text-sm text-rootstock-muted">
             To: {truncateAddress(tx.to)}
           </p>
-          <p className="text-sm text-[#FF6600] font-semibold">
+          <p className="text-sm text-rootstock-orange font-semibold">
             Amount: {formatRBTC(tx.value)} RBTC
           </p>
         </div>
         <div className="text-right flex items-center gap-2">
           <span
             className={`px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 ${tx.executed
-              ? 'bg-[#00aa00] text-white'
-              : 'bg-[#FF6600] text-white'
+              ? 'bg-rootstock-success text-white'
+              : 'bg-rootstock-orange text-white'
               }`}
           >
             {tx.executed ? (
@@ -217,12 +217,12 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
       </button>
 
       <div className="mt-2 mb-3">
-        <p className="text-sm text-[#a0a0a0]">
+        <p className="text-sm text-rootstock-muted">
           Confirmations: {(tx.numConfirmations ?? 0n).toString()} / {requiredConfirmations.toString()}
         </p>
-        <div className="mt-1 h-2 bg-[#2a2a2a] rounded-full overflow-hidden">
+        <div className="mt-1 h-2 bg-[var(--rootstock-gray)] rounded-full overflow-hidden">
           <div
-            className="h-full bg-[#FF6600] transition-all"
+            className="h-full bg-rootstock-orange transition-all"
             style={{
               width: `${Math.min((Number(tx.numConfirmations ?? 0n) / Number(requiredConfirmations)) * 100, 100)}%`,
             }}
@@ -236,7 +236,7 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
             <button
               onClick={handleConfirm}
               disabled={isConfirming || confirmed}
-              className="px-4 py-2 bg-[#FF6600] text-white text-sm rounded hover:bg-[#E55A00] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center gap-2"
+              className="px-4 py-2 bg-rootstock-orange text-white text-sm rounded hover:bg-rootstock-orange-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center gap-2"
             >
               <FaCheckCircle />
               {isConfirming ? 'Confirming...' : 'Approve'}
@@ -245,7 +245,7 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
             <button
               onClick={handleRevoke}
               disabled={isRevoking}
-              className="px-4 py-2 bg-[#2a2a2a] text-white text-sm rounded hover:bg-[#3a3a3a] border border-[#3a3a3a] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center gap-2"
+              className="px-4 py-2 bg-rootstock-muted text-white text-sm rounded hover:bg-[var(--rootstock-gray-light)] border border-[var(--rootstock-gray-light)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center gap-2"
             >
               <FaTimesCircle />
               {isRevoking ? 'Revoking...' : 'Revoke'}
@@ -255,7 +255,7 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
             <button
               onClick={handleExecute}
               disabled={isExecuting}
-              className="px-4 py-2 bg-[#00aa00] text-white text-sm rounded hover:bg-[#008800] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center gap-2"
+              className="px-4 py-2 bg-rootstock-success text-white text-sm rounded hover:bg-rootstock-success-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold flex items-center gap-2"
             >
               <FaCheckCircle />
               {isExecuting ? 'Executing...' : 'Execute'}
@@ -266,12 +266,12 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
 
       <div className="mt-3 space-y-1">
         {confirmHash && (
-          <div className="flex items-center gap-2 text-xs text-[#FF6600]">
+          <div className="flex items-center gap-2 text-xs text-rootstock-orange">
             <span>Confirm Tx:</span>
             <code className="break-all">{confirmHash}</code>
             <button
               onClick={() => copyToClipboard(confirmHash)}
-              className="text-[#FF6600] hover:text-[#FF8533] transition-colors"
+              className="text-rootstock-orange hover:underline transition-colors"
               aria-label="Copy approve transaction hash"
             >
               <FaCopy />
@@ -279,12 +279,12 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
           </div>
         )}
         {revokeHash && (
-          <div className="flex items-center gap-2 text-xs text-[#FF8533]">
+          <div className="flex items-center gap-2 text-xs text-rootstock-orange">
             <span>Revoke Tx:</span>
             <code className="break-all">{revokeHash}</code>
             <button
               onClick={() => copyToClipboard(revokeHash)}
-              className="text-[#FF8533] hover:text-[#FF6600] transition-colors"
+              className="text-rootstock-orange hover:underline transition-colors"
               aria-label="Copy revoke transaction hash"
             >
               <FaCopy />
@@ -292,12 +292,12 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
           </div>
         )}
         {executeHash && (
-          <div className="flex items-center gap-2 text-xs text-[#00aa00]">
+          <div className="flex items-center gap-2 text-xs text-rootstock-success">
             <span>Execute Tx:</span>
             <code className="break-all">{executeHash}</code>
             <button
               onClick={() => copyToClipboard(executeHash)}
-              className="text-[#00aa00] hover:text-[#00cc00] transition-colors"
+              className="text-rootstock-success hover:text-rootstock-success-light transition-colors"
               aria-label="Copy execute transaction hash"
             >
               <FaCopy />

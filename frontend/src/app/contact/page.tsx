@@ -16,20 +16,20 @@ export default function ContactPage() {
           
           <div className="space-y-8">
             {/* Support Channels */}
-            <section className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+            <section className="bg-rootstock-card p-6 rounded-lg">
               <h2 className="text-2xl font-bold text-white mb-6">Get Help</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Link
                   href="https://github.com/rootstock"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-[#2a2a2a] border border-[#3a3a3a] p-4 rounded-lg hover:border-[#FF6600] transition-all group"
+                  className="bg-rootstock-muted border border-[var(--rootstock-gray-light)] p-4 rounded-lg hover:border-rootstock-orange transition-all group"
                 >
-                  <FaGithub className="text-[#FF6600] text-2xl mb-3" />
-                  <h3 className="text-white font-semibold mb-2 group-hover:text-[#FF6600] transition-colors">
+                  <FaGithub className="text-rootstock-orange text-2xl mb-3" />
+                  <h3 className="text-white font-semibold mb-2 group-hover:text-rootstock-orange transition-colors">
                     GitHub
                   </h3>
-                  <p className="text-[#a0a0a0] text-sm">
+                  <p className="text-rootstock-muted text-sm">
                     Report issues, request features, or contribute to the project
                   </p>
                 </Link>
@@ -38,13 +38,13 @@ export default function ContactPage() {
                   href="https://twitter.com/rootstock_io"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-[#2a2a2a] border border-[#3a3a3a] p-4 rounded-lg hover:border-[#FF6600] transition-all group"
+                  className="bg-rootstock-muted border border-[var(--rootstock-gray-light)] p-4 rounded-lg hover:border-rootstock-orange transition-all group"
                 >
-                  <FaTwitter className="text-[#FF6600] text-2xl mb-3" />
-                  <h3 className="text-white font-semibold mb-2 group-hover:text-[#FF6600] transition-colors">
+                  <FaTwitter className="text-rootstock-orange text-2xl mb-3" />
+                  <h3 className="text-white font-semibold mb-2 group-hover:text-rootstock-orange transition-colors">
                     Twitter
                   </h3>
-                  <p className="text-[#a0a0a0] text-sm">
+                  <p className="text-rootstock-muted text-sm">
                     Follow for updates, announcements, and community news
                   </p>
                 </Link>
@@ -53,21 +53,21 @@ export default function ContactPage() {
                   href="https://discord.gg/rootstock"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-[#2a2a2a] border border-[#3a3a3a] p-4 rounded-lg hover:border-[#FF6600] transition-all group"
+                  className="bg-rootstock-muted border border-[var(--rootstock-gray-light)] p-4 rounded-lg hover:border-rootstock-orange transition-all group"
                 >
-                  <FaDiscord className="text-[#FF6600] text-2xl mb-3" />
-                  <h3 className="text-white font-semibold mb-2 group-hover:text-[#FF6600] transition-colors">
+                  <FaDiscord className="text-rootstock-orange text-2xl mb-3" />
+                  <h3 className="text-white font-semibold mb-2 group-hover:text-rootstock-orange transition-colors">
                     Discord
                   </h3>
-                  <p className="text-[#a0a0a0] text-sm">
+                  <p className="text-rootstock-muted text-sm">
                     Join the community for real-time support and discussions
                   </p>
                 </Link>
 
-                <div className="bg-[#2a2a2a] border border-[#3a3a3a] p-4 rounded-lg">
-                  <FaEnvelope className="text-[#FF6600] text-2xl mb-3" />
+                <div className="bg-rootstock-muted border border-[var(--rootstock-gray-light)] p-4 rounded-lg">
+                  <FaEnvelope className="text-rootstock-orange text-2xl mb-3" />
                   <h3 className="text-white font-semibold mb-2">Email</h3>
-                  <p className="text-[#a0a0a0] text-sm">
+                  <p className="text-rootstock-muted text-sm">
                     For business inquiries, contact Rootstock directly
                   </p>
                 </div>
@@ -75,9 +75,9 @@ export default function ContactPage() {
             </section>
 
             {/* Community */}
-            <section className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+            <section className="bg-rootstock-card p-6 rounded-lg">
               <h2 className="text-2xl font-bold text-white mb-4">Join the Community</h2>
-              <p className="text-[#a0a0a0] mb-4">
+              <p className="text-rootstock-muted mb-4">
                 Rootstock has a vibrant community of developers, users, and enthusiasts. 
                 Join us to stay updated on the latest developments, share your projects, 
                 and get help when you need it.
@@ -87,7 +87,7 @@ export default function ContactPage() {
                   href="https://github.com/rootstock"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 bg-[#FF6600] text-white rounded-lg hover:bg-[#E55A00] transition-colors"
+                  className="px-4 py-2 bg-rootstock-orange text-white rounded-lg hover:bg-rootstock-orange-dark transition-colors"
                 >
                   Visit GitHub
                 </Link>
@@ -95,7 +95,7 @@ export default function ContactPage() {
                   href="https://discord.gg/rootstock"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 bg-[#2a2a2a] border border-[#3a3a3a] text-white rounded-lg hover:border-[#FF6600] transition-colors"
+                  className="px-4 py-2 bg-rootstock-muted border border-[var(--rootstock-gray-light)] text-white rounded-lg hover:border-rootstock-orange transition-colors"
                 >
                   Join Discord
                 </Link>

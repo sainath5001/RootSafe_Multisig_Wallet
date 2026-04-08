@@ -55,6 +55,8 @@ export function WalletDashboard() {
     },
   })
 
+  const readError = txCountError || ownerCountError || requiredConfirmationsError || balanceError
+
   // Calculate real transaction statistics
   // Note: Fetching all transactions for detailed charts would be expensive.
   // For production, consider using an indexer or backend API to aggregate historical data.
@@ -88,17 +90,17 @@ export function WalletDashboard() {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg animate-pulse">
-            <div className="h-4 bg-[#2a2a2a] rounded w-24 mb-2"></div>
-            <div className="h-8 bg-[#2a2a2a] rounded w-16"></div>
+          <div className="bg-rootstock-card p-6 rounded-lg animate-pulse">
+            <div className="h-4 bg-rootstock-muted rounded w-24 mb-2"></div>
+            <div className="h-8 bg-rootstock-muted rounded w-16"></div>
           </div>
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg animate-pulse">
-            <div className="h-4 bg-[#2a2a2a] rounded w-24 mb-2"></div>
-            <div className="h-8 bg-[#2a2a2a] rounded w-16"></div>
+          <div className="bg-rootstock-card p-6 rounded-lg animate-pulse">
+            <div className="h-4 bg-rootstock-muted rounded w-24 mb-2"></div>
+            <div className="h-8 bg-rootstock-muted rounded w-16"></div>
           </div>
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg animate-pulse">
-            <div className="h-4 bg-[#2a2a2a] rounded w-24 mb-2"></div>
-            <div className="h-8 bg-[#2a2a2a] rounded w-16"></div>
+          <div className="bg-rootstock-card p-6 rounded-lg animate-pulse">
+            <div className="h-4 bg-rootstock-muted rounded w-24 mb-2"></div>
+            <div className="h-8 bg-rootstock-muted rounded w-16"></div>
           </div>
         </div>
       </div>
@@ -107,20 +109,28 @@ export function WalletDashboard() {
 
   return (
     <div className="space-y-6">
+      {readError && (
+        <div className="bg-rootstock-warning border border-rootstock-orange p-4 rounded-lg">
+          <p className="text-sm text-white font-semibold mb-1">Network / RPC error</p>
+          <p className="text-xs text-rootstock-muted break-words">
+            {(readError as Error).message || 'Failed to read contract data. Check RPC / chain and refresh.'}
+          </p>
+        </div>
+      )}
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
-          <h3 className="text-sm text-[#a0a0a0] mb-2">Total Transactions</h3>
+        <div className="bg-rootstock-card p-6 rounded-lg">
+          <h3 className="text-sm text-rootstock-muted mb-2">Total Transactions</h3>
           <p className="text-3xl font-bold text-white">{txCount?.toString() || '0'}</p>
         </div>
-        <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
-          <h3 className="text-sm text-[#a0a0a0] mb-2">Wallet Balance</h3>
-          <p className="text-3xl font-bold text-[#FF6600]">
+        <div className="bg-rootstock-card p-6 rounded-lg">
+          <h3 className="text-sm text-rootstock-muted mb-2">Wallet Balance</h3>
+          <p className="text-3xl font-bold text-rootstock-orange">
             {balance?.value !== undefined ? formatRBTC(balance.value) : '0'} RBTC
           </p>
         </div>
-        <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
-          <h3 className="text-sm text-[#a0a0a0] mb-2">Confirmation Rate</h3>
+        <div className="bg-rootstock-card p-6 rounded-lg">
+          <h3 className="text-sm text-rootstock-muted mb-2">Confirmation Rate</h3>
           <p className="text-3xl font-bold text-green-400">
             {requiredConfirmations && ownerCount
               ? `${Math.round((Number(requiredConfirmations) / Number(ownerCount)) * 100)}%`

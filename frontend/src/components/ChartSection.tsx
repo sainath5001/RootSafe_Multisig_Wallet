@@ -12,9 +12,9 @@ export default function ChartSection({ transactionHistory, confirmationRate }: C
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Transaction History Chart */}
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+      <div className="bg-rootstock-card p-6 rounded-lg">
         <div className="flex items-center gap-2 mb-4">
-          <FaChartLine className="text-[#FF6600]" />
+          <FaChartLine className="text-rootstock-orange" />
           <h3 className="text-xl font-bold text-white">Transaction History</h3>
         </div>
         <ResponsiveContainer width="100%" height={300}>
@@ -24,22 +24,22 @@ export default function ChartSection({ transactionHistory, confirmationRate }: C
             <YAxis stroke="#a0a0a0" />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#1a1a1a',
-                border: '1px solid #2a2a2a',
+                backgroundColor: 'var(--rootstock-gray-dark)',
+                border: '1px solid var(--rootstock-gray)',
                 color: '#ededed',
               }}
             />
             <Legend />
-            <Line type="monotone" dataKey="transactions" stroke="#FF6600" strokeWidth={2} />
+            <Line type="monotone" dataKey="transactions" stroke="var(--rootstock-orange)" strokeWidth={2} />
             <Line type="monotone" dataKey="confirmations" stroke="#00aa00" strokeWidth={2} />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
       {/* Confirmation Rate Chart */}
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+      <div className="bg-rootstock-card p-6 rounded-lg">
         <div className="flex items-center gap-2 mb-4">
-          <FaChartBar className="text-[#FF6600]" />
+          <FaChartBar className="text-rootstock-orange" />
           <h3 className="text-xl font-bold text-white">Transaction Status</h3>
         </div>
         <ResponsiveContainer width="100%" height={300}>
@@ -49,12 +49,12 @@ export default function ChartSection({ transactionHistory, confirmationRate }: C
             <YAxis stroke="#a0a0a0" />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#1a1a1a',
-                border: '1px solid #2a2a2a',
+                backgroundColor: 'var(--rootstock-gray-dark)',
+                border: '1px solid var(--rootstock-gray)',
                 color: '#ededed',
               }}
             />
-            <Bar dataKey="count" fill="#FF6600" />
+            <Bar dataKey="count" fill="var(--rootstock-orange)" />
           </BarChart>
         </ResponsiveContainer>
       </div>

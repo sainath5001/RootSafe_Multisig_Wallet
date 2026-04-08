@@ -32,7 +32,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-lg bg-[#1a1a1a] border border-[#2a2a2a] text-[#a0a0a0] hover:text-[#FF6600] hover:border-[#FF6600] transition-colors"
+      className="p-2 rounded-lg bg-rootstock-panel border border-rootstock text-rootstock-muted hover:text-rootstock-orange hover:border-rootstock-orange transition-colors"
       aria-label="Toggle theme"
     >
       {isDark ? <FaSun size={18} /> : <FaMoon size={18} />}

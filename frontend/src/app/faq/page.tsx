@@ -21,7 +21,7 @@ const faqs: FAQItem[] = [
   },
   {
     question: 'Can I change the required number of confirmations?',
-    answer: 'No, the required confirmations are set when the contract is deployed and cannot be changed. This is a security feature to prevent unauthorized modifications.',
+    answer: 'Yes, but only via the multisig itself (a confirmed and executed multisig transaction calling changeRequirement).',
   },
   {
     question: 'What happens if I lose access to my wallet?',
@@ -29,7 +29,7 @@ const faqs: FAQItem[] = [
   },
   {
     question: 'Can I add or remove owners after deployment?',
-    answer: 'The current implementation does not support adding or removing owners after deployment. The owner list is fixed at contract creation. Future versions may include this feature.',
+    answer: 'Yes, but only via the multisig itself (submit a transaction to the wallet calling addOwner/removeOwner/replaceOwner, then collect confirmations and execute).',
   },
   {
     question: 'What network should I use?',
@@ -72,22 +72,22 @@ export default function FAQPage() {
             {faqs.map((faq, index) => (
               <div
                 key={index}
-                className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg overflow-hidden"
+                className="bg-rootstock-card rounded-lg overflow-hidden"
               >
                 <button
                   onClick={() => toggleFAQ(index)}
-                  className="w-full px-6 py-4 flex justify-between items-center text-left hover:bg-[#2a2a2a] transition-colors"
+                  className="w-full px-6 py-4 flex justify-between items-center text-left hover:bg-rootstock-muted transition-colors"
                 >
                   <span className="text-white font-semibold">{faq.question}</span>
                   {openIndex === index ? (
-                    <FaChevronUp className="text-[#FF6600] flex-shrink-0" />
+                    <FaChevronUp className="text-rootstock-orange flex-shrink-0" />
                   ) : (
-                    <FaChevronDown className="text-[#a0a0a0] flex-shrink-0" />
+                    <FaChevronDown className="text-rootstock-muted flex-shrink-0" />
                   )}
                 </button>
                 {openIndex === index && (
-                  <div className="px-6 py-4 border-t border-[#2a2a2a]">
-                    <p className="text-[#a0a0a0] leading-relaxed">{faq.answer}</p>
+                  <div className="px-6 py-4 border-t border-rootstock">
+                    <p className="text-rootstock-muted leading-relaxed">{faq.answer}</p>
                   </div>
                 )}
               </div>

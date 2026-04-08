@@ -70,12 +70,12 @@ export function TxListSimple() {
   // Early returns AFTER all hooks are called
   if (!isMounted) {
     return (
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+      <div className="bg-rootstock-card p-6 rounded-lg">
         <div className="animate-pulse">
-          <div className="h-6 bg-[#2a2a2a] rounded w-32 mb-4"></div>
-          <div className="h-10 bg-[#2a2a2a] rounded mb-4"></div>
+          <div className="h-6 bg-rootstock-muted rounded w-32 mb-4"></div>
+          <div className="h-10 bg-rootstock-muted rounded mb-4"></div>
           <div className="space-y-2">
-            <div className="h-20 bg-[#2a2a2a] rounded"></div>
+            <div className="h-20 bg-rootstock-muted rounded"></div>
           </div>
         </div>
       </div>
@@ -84,18 +84,18 @@ export function TxListSimple() {
 
   if (!isConnected) {
     return (
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+      <div className="bg-rootstock-card p-6 rounded-lg">
         <h2 className="text-xl font-bold mb-4 text-white">Transactions</h2>
-        <p className="text-[#a0a0a0]">Please connect your wallet to view transactions.</p>
+        <p className="text-rootstock-muted">Please connect your wallet to view transactions.</p>
       </div>
     )
   }
 
   if (!multisigAddress) {
     return (
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+      <div className="bg-rootstock-card p-6 rounded-lg">
         <h2 className="text-xl font-bold mb-4 text-white">Transactions</h2>
-        <p className="text-[#a0a0a0]">
+        <p className="text-rootstock-muted">
           No multisig contract configured. Set <code className="text-white">NEXT_PUBLIC_MULTISIG_ADDRESS</code> in{' '}
           <code className="text-white">frontend/.env.local</code> or deploy a new multisig from the UI.
         </p>
@@ -104,10 +104,10 @@ export function TxListSimple() {
   }
 
   return (
-    <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+    <div className="bg-rootstock-card p-6 rounded-lg">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-white">Transactions</h2>
-        <span className="text-sm text-[#a0a0a0]">
+        <span className="text-sm text-rootstock-muted">
           Total: {txCountNum} | Required: {requiredConfirmations?.toString() || '0'} / {ownerCount?.toString() || '0'}
         </span>
       </div>
@@ -115,13 +115,13 @@ export function TxListSimple() {
       {/* Search and Filter */}
       <div className="mb-4 space-y-3">
         <div className="relative">
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#a0a0a0]" />
+          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-rootstock-muted" />
           <input
             type="text"
             placeholder="Search by transaction ID or address..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-black border border-[#2a2a2a] rounded-lg text-white placeholder-[#666] focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-[#FF6600] transition-colors"
+            className="w-full pl-10 pr-4 py-2 bg-rootstock-surface border border-rootstock rounded-lg text-white placeholder-rootstock-subtle focus:outline-none focus:ring-2 focus:ring-[var(--rootstock-orange)] focus:border-[var(--rootstock-orange)] transition-colors"
           />
         </div>
         <div className="flex gap-2">
@@ -129,8 +129,8 @@ export function TxListSimple() {
             onClick={() => setFilterStatus('all')}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
               filterStatus === 'all'
-                ? 'bg-[#FF6600] text-white'
-                : 'bg-[#2a2a2a] text-[#a0a0a0] hover:text-white'
+                ? 'bg-rootstock-orange text-white'
+                : 'bg-rootstock-muted text-rootstock-muted hover:text-white'
             }`}
           >
             All
@@ -139,8 +139,8 @@ export function TxListSimple() {
             onClick={() => setFilterStatus('pending')}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
               filterStatus === 'pending'
-                ? 'bg-[#FF6600] text-white'
-                : 'bg-[#2a2a2a] text-[#a0a0a0] hover:text-white'
+                ? 'bg-rootstock-orange text-white'
+                : 'bg-rootstock-muted text-rootstock-muted hover:text-white'
             }`}
           >
             Pending
@@ -149,8 +149,8 @@ export function TxListSimple() {
             onClick={() => setFilterStatus('executed')}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
               filterStatus === 'executed'
-                ? 'bg-[#FF6600] text-white'
-                : 'bg-[#2a2a2a] text-[#a0a0a0] hover:text-white'
+                ? 'bg-rootstock-orange text-white'
+                : 'bg-rootstock-muted text-rootstock-muted hover:text-white'
             }`}
           >
             Executed
@@ -159,15 +159,15 @@ export function TxListSimple() {
       </div>
 
       {isOwner === false && address && (
-        <div className="mb-4 p-4 bg-[#3a2a00] border border-[#FF6600] rounded-md">
-          <p className="text-[#FF8533] text-sm">
+        <div className="mb-4 p-4 bg-rootstock-warning-soft border border-rootstock-orange rounded-md">
+          <p className="text-rootstock-orange text-sm">
             ⚠️ You are not an owner. You can view transactions but cannot interact with them.
           </p>
         </div>
       )}
 
       {txCountNum === 0 ? (
-        <p className="text-[#a0a0a0]">No transactions yet.</p>
+        <p className="text-rootstock-muted">No transactions yet.</p>
       ) : (
         <div className="space-y-4">
           {filteredTxIds.map((txId) => (
@@ -215,7 +215,7 @@ function TransactionItemWrapper({
   })
 
   if (!tx || typeof tx !== 'object') {
-    return <div className="p-4 border border-[#2a2a2a] rounded-lg bg-[#1a1a1a] text-[#a0a0a0]">Loading transaction #{txId}...</div>
+    return <div className="p-4 border border-rootstock rounded-lg bg-rootstock-panel text-rootstock-muted">Loading transaction #{txId}...</div>
   }
 
   const safeTx = normalizeTransaction(tx)

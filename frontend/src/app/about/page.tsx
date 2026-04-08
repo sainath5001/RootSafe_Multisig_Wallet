@@ -15,12 +15,12 @@ export default function AboutPage() {
 
           <div className="space-y-8">
             {/* What is Multisig */}
-            <section className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+            <section className="bg-rootstock-card p-6 rounded-lg">
               <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                <FaShieldAlt className="text-[#FF6600]" />
+                <FaShieldAlt className="text-rootstock-orange" />
                 What is a Multisignature Wallet?
               </h2>
-              <p className="text-[#a0a0a0] leading-relaxed">
+              <p className="text-rootstock-muted leading-relaxed">
                 A multisignature (multisig) wallet is a cryptocurrency wallet that requires multiple
                 private keys to authorize a transaction. Instead of a single key controlling the funds,
                 multiple owners must approve transactions before they can be executed. This adds an
@@ -29,35 +29,35 @@ export default function AboutPage() {
             </section>
 
             {/* How it Works */}
-            <section className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+            <section className="bg-rootstock-card p-6 rounded-lg">
               <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                <FaUsers className="text-[#FF6600]" />
+                <FaUsers className="text-rootstock-orange" />
                 How It Works
               </h2>
-              <div className="space-y-4 text-[#a0a0a0]">
+              <div className="space-y-4 text-rootstock-muted">
                 <div className="flex items-start gap-3">
-                  <span className="text-[#FF6600] font-bold">1.</span>
+                  <span className="text-rootstock-orange font-bold">1.</span>
                   <p><strong className="text-white">Submit Transaction:</strong> Any owner can submit a transaction proposal with recipient address, amount, and optional data.</p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="text-[#FF6600] font-bold">2.</span>
+                  <span className="text-rootstock-orange font-bold">2.</span>
                   <p><strong className="text-white">Approve Transaction:</strong> Other owners review and approve the transaction. Each approval counts toward the required threshold.</p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="text-[#FF6600] font-bold">3.</span>
+                  <span className="text-rootstock-orange font-bold">3.</span>
                   <p><strong className="text-white">Execute Transaction:</strong> Once enough owners have approved (meeting the required confirmations), any owner can execute the transaction.</p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="text-[#FF6600] font-bold">4.</span>
+                  <span className="text-rootstock-orange font-bold">4.</span>
                   <p><strong className="text-white">Revoke (Optional):</strong> Owners can revoke their approval before execution if they change their mind.</p>
                 </div>
               </div>
             </section>
 
             {/* Security Features */}
-            <section className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+            <section className="bg-rootstock-card p-6 rounded-lg">
               <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                <FaLock className="text-[#FF6600]" />
+                <FaLock className="text-rootstock-orange" />
                 Security Features
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -65,51 +65,51 @@ export default function AboutPage() {
                   <FaCheckCircle className="text-green-400 mt-1 flex-shrink-0" />
                   <div>
                     <h3 className="text-white font-semibold mb-1">Multiple Approvals Required</h3>
-                    <p className="text-[#a0a0a0] text-sm">Transactions require M out of N owner approvals, preventing unauthorized access.</p>
+                    <p className="text-rootstock-muted text-sm">Transactions require M out of N owner approvals, preventing unauthorized access.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <FaCheckCircle className="text-green-400 mt-1 flex-shrink-0" />
                   <div>
                     <h3 className="text-white font-semibold mb-1">On-Chain Transparency</h3>
-                    <p className="text-[#a0a0a0] text-sm">All transactions and approvals are recorded on the blockchain for full transparency.</p>
+                    <p className="text-rootstock-muted text-sm">All transactions and approvals are recorded on the blockchain for full transparency.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <FaCheckCircle className="text-green-400 mt-1 flex-shrink-0" />
                   <div>
                     <h3 className="text-white font-semibold mb-1">Reentrancy Protection</h3>
-                    <p className="text-[#a0a0a0] text-sm">Built with OpenZeppelin's ReentrancyGuard to prevent reentrancy attacks.</p>
+                    <p className="text-rootstock-muted text-sm">Built with OpenZeppelin's ReentrancyGuard to prevent reentrancy attacks.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <FaCheckCircle className="text-green-400 mt-1 flex-shrink-0" />
                   <div>
                     <h3 className="text-white font-semibold mb-1">Safe Transfer</h3>
-                    <p className="text-[#a0a0a0] text-sm">Uses safe call() method for RBTC transfers, preventing common vulnerabilities.</p>
+                    <p className="text-rootstock-muted text-sm">Uses safe call() method for RBTC transfers, preventing common vulnerabilities.</p>
                   </div>
                 </div>
               </div>
             </section>
 
             {/* Use Cases */}
-            <section className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+            <section className="bg-rootstock-card p-6 rounded-lg">
               <h2 className="text-2xl font-bold text-white mb-4">Use Cases</h2>
-              <ul className="space-y-2 text-[#a0a0a0]">
+              <ul className="space-y-2 text-rootstock-muted">
                 <li className="flex items-start gap-2">
-                  <span className="text-[#FF6600]">•</span>
+                  <span className="text-rootstock-orange">•</span>
                   <span><strong className="text-white">Organizations:</strong> Require multiple executives to approve large transactions</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-[#FF6600]">•</span>
+                  <span className="text-rootstock-orange">•</span>
                   <span><strong className="text-white">DAOs:</strong> Community-governed funds requiring member consensus</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-[#FF6600]">•</span>
+                  <span className="text-rootstock-orange">•</span>
                   <span><strong className="text-white">Personal Security:</strong> Family or business partners managing shared funds</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-[#FF6600]">•</span>
+                  <span className="text-rootstock-orange">•</span>
                   <span><strong className="text-white">Escrow Services:</strong> Requiring multiple parties to release funds</span>
                 </li>
               </ul>

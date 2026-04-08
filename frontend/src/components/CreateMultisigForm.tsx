@@ -7,7 +7,9 @@ import { MULTISIG_ABI } from '@/lib/contract'
 import { useMultisig } from '@/context/MultisigContext'
 import { getDefaultMultisigAddress } from '@/lib/contract'
 import toast from 'react-hot-toast'
-import { FaPlus, FaTrash, FaCopy } from 'react-icons/fa'
+import { FaPlus, FaTrash, FaCopy, FaExternalLinkAlt } from 'react-icons/fa'
+import { getExplorerAddressUrl, truncateAddress } from '@/lib/utils'
+import Link from 'next/link'
 
 function parseOwners(raw: string[]): { ok: true; owners: Address[] } | { ok: false; message: string } {
   const trimmed = raw.map((s) => s.trim()).filter(Boolean)
@@ -37,6 +39,7 @@ export function CreateMultisigForm() {
   const [ownerRows, setOwnerRows] = useState<string[]>(['', '', ''])
   const [requiredStr, setRequiredStr] = useState('2')
   const [deployBytecode, setDeployBytecode] = useState<`0x${string}` | null>(null)
+  const [lastDeployed, setLastDeployed] = useState<Address | null>(null)
 
   const { deployContract, data: deployHash, isPending: isDeployPending, error: deployError, reset } =
     useDeployContract()
@@ -48,6 +51,7 @@ export function CreateMultisigForm() {
     if (!deploySuccess || !receipt?.contractAddress) return
     const deployed = receipt.contractAddress as Address
     setMultisigAddress(deployed)
+    setLastDeployed(deployed)
     toast.success(`Multisig deployed at ${deployed.slice(0, 10)}…`)
     reset()
     setOwnerRows(['', '', ''])
@@ -118,17 +122,17 @@ export function CreateMultisigForm() {
   if (!isConnected || !hydrated) return null
 
   return (
-    <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 mb-6">
+    <div className="bg-rootstock-card rounded-lg p-6 mb-6">
       <h2 className="text-xl font-bold text-white mb-2">Create your multisig</h2>
-      <p className="text-sm text-[#a0a0a0] mb-4">
+      <p className="text-sm text-rootstock-muted mb-4">
         Deploy a new wallet on-chain with your owners and threshold (e.g. 2 of 3). Gas is paid by your connected
         wallet ({address?.slice(0, 8)}…).
       </p>
 
-      <div className="mb-4 p-3 rounded-lg bg-black border border-[#2a2a2a]">
-        <p className="text-xs text-[#a0a0a0] mb-1">Active multisig contract</p>
+      <div className="mb-4 p-3 rounded-lg bg-rootstock-surface border border-rootstock">
+        <p className="text-xs text-rootstock-muted mb-1">Active multisig contract</p>
         <div className="flex flex-wrap items-center gap-2">
-          <code className="text-[#FF6600] text-sm break-all">{multisigAddress ?? 'Not set'}</code>
+          <code className="text-rootstock-orange text-sm break-all">{multisigAddress ?? 'Not set'}</code>
           <button
             type="button"
             onClick={() => {
@@ -138,12 +142,43 @@ export function CreateMultisigForm() {
                 .then(() => toast.success('Copied'))
                 .catch(() => toast.error('Copy failed'))
             }}
-            className="text-[#FF6600] p-1"
+            className="text-rootstock-orange p-1"
             aria-label="Copy active multisig address"
           >
             <FaCopy />
           </button>
         </div>
+        {lastDeployed && (
+          <div className="mt-3 p-3 rounded-lg bg-rootstock-panel border border-rootstock">
+            <p className="text-xs text-rootstock-muted mb-2">Deployment success</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <code className="text-white text-sm">{truncateAddress(lastDeployed)}</code>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard
+                    .writeText(lastDeployed)
+                    .then(() => toast.success('Copied'))
+                    .catch(() => toast.error('Copy failed'))
+                }}
+                className="text-rootstock-orange p-1"
+                aria-label="Copy deployed multisig address"
+              >
+                <FaCopy />
+              </button>
+              <Link
+                href={getExplorerAddressUrl(lastDeployed)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-rootstock-orange hover:underline transition-colors p-1"
+                aria-label="Open deployed contract in explorer"
+              >
+                <FaExternalLinkAlt />
+              </Link>
+            </div>
+            <p className="mt-2 text-xs text-rootstock-muted">Next: fund the multisig before executing value transfers.</p>
+          </div>
+        )}
         {usingCustom && (
           <button
             type="button"
@@ -151,13 +186,13 @@ export function CreateMultisigForm() {
               resetToDefaultMultisig()
               toast.success('Switched to default contract from .env')
             }}
-            className="mt-2 text-xs text-[#a0a0a0] underline hover:text-white"
+            className="mt-2 text-xs text-rootstock-muted underline hover:text-white"
           >
             Use default wallet (.env) instead
           </button>
         )}
         {missingEnvDefault && (
-          <p className="mt-2 text-xs text-[#a0a0a0]">
+          <p className="mt-2 text-xs text-rootstock-muted">
             Default contract is not configured. Set <code className="text-white">NEXT_PUBLIC_MULTISIG_ADDRESS</code> in{' '}
             <code className="text-white">frontend/.env.local</code>, or deploy a new multisig above.
           </p>
@@ -173,13 +208,13 @@ export function CreateMultisigForm() {
               placeholder={`Owner ${i + 1} (0x…)`}
               value={row}
               onChange={(e) => setRow(i, e.target.value)}
-              className="flex-1 px-3 py-2 bg-black border border-[#2a2a2a] rounded-lg text-white text-sm placeholder-[#666] focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
+              className="flex-1 px-3 py-2 bg-rootstock-surface border border-rootstock rounded-lg text-white text-sm placeholder-rootstock-subtle focus:outline-none focus:ring-2 focus:ring-[var(--rootstock-orange)]"
             />
             {ownerRows.length > 1 && (
               <button
                 type="button"
                 onClick={() => removeRow(i)}
-                className="px-3 py-2 bg-[#2a2a2a] text-[#a0a0a0] rounded-lg hover:text-white"
+                className="px-3 py-2 bg-rootstock-muted text-rootstock-muted rounded-lg hover:text-white"
                 aria-label="Remove owner"
               >
                 <FaTrash />
@@ -190,7 +225,7 @@ export function CreateMultisigForm() {
         <button
           type="button"
           onClick={addRow}
-          className="flex items-center gap-2 text-sm text-[#FF6600] hover:text-[#FF8533]"
+          className="flex items-center gap-2 text-sm text-rootstock-orange hover:underline"
         >
           <FaPlus /> Add owner
         </button>
@@ -207,9 +242,9 @@ export function CreateMultisigForm() {
           max={ownerRows.filter((s) => s.trim()).length || 99}
           value={requiredStr}
           onChange={(e) => setRequiredStr(e.target.value)}
-          className="w-32 px-3 py-2 bg-black border border-[#2a2a2a] rounded-lg text-white"
+          className="w-32 px-3 py-2 bg-rootstock-surface border border-rootstock rounded-lg text-white"
         />
-        <p className="text-xs text-[#666] mt-1">
+        <p className="text-xs text-rootstock-subtle mt-1">
           Must be ≥ 1 and ≤ number of non-empty owner addresses.
         </p>
       </div>
@@ -218,7 +253,7 @@ export function CreateMultisigForm() {
         type="button"
         onClick={handleDeploy}
         disabled={isDeployPending || isConfirming || !deployBytecode}
-        className="w-full sm:w-auto px-6 py-3 bg-[#FF6600] text-white font-semibold rounded-lg hover:bg-[#E55A00] disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full sm:w-auto px-6 py-3 bg-rootstock-orange text-white font-semibold rounded-lg hover:bg-rootstock-orange-dark disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isDeployPending || isConfirming
           ? 'Deploying… (confirm in wallet)'
@@ -228,7 +263,7 @@ export function CreateMultisigForm() {
       </button>
 
       {deployHash && (
-        <p className="mt-3 text-xs text-[#a0a0a0] break-all">
+        <p className="mt-3 text-xs text-rootstock-muted break-all">
           Tx: {deployHash}
         </p>
       )}

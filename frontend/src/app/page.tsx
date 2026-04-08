@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Navigation } from '@/components/Navigation'
 import { Hero } from '@/components/Hero'
 import { StatsCards } from '@/components/StatsCards'
@@ -11,6 +11,7 @@ import { OwnersList } from '@/components/OwnersList'
 import { WalletDashboard } from '@/components/WalletDashboard'
 import dynamic from 'next/dynamic'
 import { useAccount } from 'wagmi'
+import { useIsMounted } from '@/hooks/useIsMounted'
 
 const CreateMultisigForm = dynamic(() => import('@/components/CreateMultisigForm').then((m) => m.CreateMultisigForm), {
   ssr: false,
@@ -18,11 +19,7 @@ const CreateMultisigForm = dynamic(() => import('@/components/CreateMultisigForm
 })
 
 export default function Home() {
-  const [isMounted, setIsMounted] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
+  const isMounted = useIsMounted()
 
   const { isConnected } = useAccount()
 
@@ -51,13 +48,13 @@ export default function Home() {
             </div>
           ) : isMounted ? (
             <div className="mt-12 text-center">
-              <p className="text-[#a0a0a0] text-lg">
+              <p className="text-rootstock-muted text-lg">
                 Connect your wallet to start using the multisig wallet
               </p>
             </div>
           ) : (
             <div className="mt-12 text-center">
-              <p className="text-[#a0a0a0] text-lg">Loading...</p>
+              <p className="text-rootstock-muted text-lg">Loading...</p>
             </div>
           )}
         </div>

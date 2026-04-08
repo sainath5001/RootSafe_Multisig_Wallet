@@ -92,19 +92,19 @@ export function SubmitTxForm() {
 
   if (!isConnected) {
     return (
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+      <div className="bg-rootstock-card p-6 rounded-lg">
         <h2 className="text-xl font-bold mb-4 text-white">Submit Transaction</h2>
-        <p className="text-[#a0a0a0]">Please connect your wallet to submit transactions.</p>
+        <p className="text-rootstock-muted">Please connect your wallet to submit transactions.</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-lg">
+    <div className="bg-rootstock-card p-6 rounded-lg">
       <h2 className="text-xl font-bold mb-4 text-white">Submit Transaction</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="submitTxRecipient" className="block text-sm font-medium text-[#a0a0a0] mb-1">
+          <label htmlFor="submitTxRecipient" className="block text-sm font-medium text-rootstock-muted mb-1">
             Recipient Address
           </label>
           <input
@@ -114,11 +114,11 @@ export function SubmitTxForm() {
             onChange={(e) => setRecipient(e.target.value)}
             placeholder="0x..."
             required
-            className="w-full px-3 py-2 bg-black border border-[#2a2a2a] rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-[#FF6600] text-white placeholder-[#666] transition-colors"
+            className="w-full px-3 py-2 bg-rootstock-surface border border-rootstock rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--rootstock-orange)] focus:border-[var(--rootstock-orange)] text-white placeholder-rootstock-subtle transition-colors"
           />
         </div>
         <div>
-          <label htmlFor="submitTxAmount" className="block text-sm font-medium text-[#a0a0a0] mb-1">
+          <label htmlFor="submitTxAmount" className="block text-sm font-medium text-rootstock-muted mb-1">
             Amount (RBTC)
           </label>
           <input
@@ -129,11 +129,11 @@ export function SubmitTxForm() {
             placeholder="0.01"
             required
             step="any"
-            className="w-full px-3 py-2 bg-black border border-[#2a2a2a] rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-[#FF6600] text-white placeholder-[#666] transition-colors"
+            className="w-full px-3 py-2 bg-rootstock-surface border border-rootstock rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--rootstock-orange)] focus:border-[var(--rootstock-orange)] text-white placeholder-rootstock-subtle transition-colors"
           />
         </div>
         <div>
-          <label htmlFor="submitTxData" className="block text-sm font-medium text-[#a0a0a0] mb-1">
+          <label htmlFor="submitTxData" className="block text-sm font-medium text-rootstock-muted mb-1">
             Data (Optional - Hex string)
           </label>
           <input
@@ -142,13 +142,13 @@ export function SubmitTxForm() {
             value={data}
             onChange={(e) => setData(e.target.value)}
             placeholder="0x (leave empty for simple transfer)"
-            className="w-full px-3 py-2 bg-black border border-[#2a2a2a] rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF6600] focus:border-[#FF6600] text-white placeholder-[#666] transition-colors"
+            className="w-full px-3 py-2 bg-rootstock-surface border border-rootstock rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--rootstock-orange)] focus:border-[var(--rootstock-orange)] text-white placeholder-rootstock-subtle transition-colors"
           />
         </div>
         <button
           type="submit"
           disabled={isPending || isConfirming}
-          className="w-full px-4 py-2 bg-[#FF6600] text-white rounded-lg hover:bg-[#E55A00] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold"
+          className="w-full px-4 py-2 bg-rootstock-orange text-white rounded-lg hover:bg-rootstock-orange-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold"
         >
           {isPending ? 'Waiting for approval...' : isConfirming ? 'Submitting...' : 'Submit Transaction'}
         </button>
@@ -168,7 +168,7 @@ export function SubmitTxForm() {
           </p>
         )}
         {hash && (
-          <p className="text-[#FF6600] text-sm break-all">
+          <p className="text-rootstock-orange text-sm break-all">
             Tx Hash: {hash}
           </p>
         )}
