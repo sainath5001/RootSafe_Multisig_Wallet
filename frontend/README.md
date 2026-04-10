@@ -59,9 +59,17 @@ Navigate to [http://localhost:3000](http://localhost:3000)
 
 The ABI (Application Binary Interface) is required for the frontend to interact with the smart contract.
 
-### Option 1: Copy from Foundry output (Recommended)
+### Option 1: Sync ABI from Foundry (Recommended)
 
-After compiling your contracts with Foundry, copy the ABI:
+After any contract change, compile and copy only the ABI array into the frontend:
+
+```bash
+cd ../contracts && forge build && cd ../frontend && npm run sync:abi
+```
+
+This runs `scripts/sync-abi.mjs`, which reads `contracts/out/MultiSigWallet.sol/MultiSigWallet.json` and writes `src/abi/MultiSigWallet.json`.
+
+You can also copy manually:
 
 ```bash
 # From the frontend directory

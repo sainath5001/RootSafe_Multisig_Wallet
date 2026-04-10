@@ -215,9 +215,8 @@ cd ../frontend
 # Install dependencies
 npm install
 
-# Copy ABI from contracts
-cp ../contracts/out/MultiSigWallet.sol/MultiSigWallet.json src/abi/
-# Extract ABI (see frontend/README.md for details)
+# After `forge build` in contracts/, sync the ABI into the frontend
+npm run sync:abi
 
 # Set up environment variables
 cp .env.local.example .env.local
