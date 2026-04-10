@@ -69,8 +69,11 @@ export function Navigation() {
             <ThemeToggle />
             <ConnectButton />
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="text-rootstock-muted hover:text-white transition-colors"
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
             </button>

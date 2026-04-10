@@ -92,7 +92,7 @@ graph TB
 - ✅ Reentrancy protection with OpenZeppelin's ReentrancyGuard
 - ✅ Comprehensive event logging
 - ✅ Gas-efficient design
-- ✅ Full Foundry test coverage
+- ✅ Foundry tests covering core flows and multisig-controlled owner/threshold management
 
 ### Frontend Features
 - ✅ Modern Next.js 14 with App Router
@@ -240,7 +240,7 @@ The smart contract is built with Foundry and implements a secure multisignature 
 
 ### 👥 Ownership
 
-**Important**: Owners are set **only during deployment** and **cannot be changed** afterward. To become an owner, your address must be included in the `OWNERS` environment variable during deployment.
+**Initial owners** are set at deployment time (via `OWNERS` in the deploy script / environment). After deployment, the owner set and confirmation threshold can still be changed **only through multisig-executed transactions** (see `addOwner`, `removeOwner`, `replaceOwner`, and `changeRequirement` in `MultiSigWallet.sol`). Those functions use `onlyWallet`, so they must be executed as a transaction whose `to` is the wallet itself—no single owner can invoke them directly.
 
 **Example:**
 ```bash

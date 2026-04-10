@@ -59,8 +59,8 @@ export function normalizeTransaction(raw: unknown): Transaction {
     }
   }
 
-  if (typeof raw === 'object') {
-    const o = raw as any
+  if (typeof raw === 'object' && raw !== null) {
+    const o = raw as Record<string, unknown>
     return {
       to: (o.to ?? fallback.to) as Address,
       value: (o.value ?? fallback.value) as bigint,

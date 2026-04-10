@@ -37,7 +37,7 @@ This multisignature wallet contract allows a group of owners to control a wallet
 - ✅ Reentrancy protection
 - ✅ Comprehensive event logging
 - ✅ Gas-efficient design
-- ✅ Full Foundry test coverage
+- ✅ Foundry tests covering core flows and multisig-controlled owner/threshold management
 
 ## 📦 Requirements
 
@@ -104,6 +104,7 @@ The test suite includes:
 - ✅ Integration tests (full flows)
 - ✅ Multiple transactions handling
 - ✅ View function tests
+- ✅ Owner / threshold management (`addOwner`, `removeOwner`, `replaceOwner`, `changeRequirement`) and `onlyWallet` enforcement
 
 ## 🏗️ Building
 
@@ -136,6 +137,7 @@ The contract supports changing owners and the required confirmation threshold **
 Safety rules enforced:
 - `changeRequirement` must satisfy \(1 \le requiredConfirmations \le owners.length\)
 - `removeOwner` is blocked if it would make `requiredConfirmations > owners.length - 1` (prevents permanent lock)
+- `removeOwner` also clears the removed address's confirmations on **pending** transactions (O(n) over stored transactions; can be costly for very large histories)
 
 ### Data size limit
 
@@ -256,18 +258,19 @@ Required confirmations: 2
 
 ## 👥 Understanding Ownership
 
-### Ownership is Immutable
+### Initial owners vs. later changes
 
-**Important**: The owners of a MultiSigWallet are set **only during deployment** and **cannot be changed** afterward. This is by design for security - the contract has no functions to add or remove owners after deployment.
+**Initial owners** are configured in the constructor at deployment time. After deployment, the owner set and confirmation threshold can be updated **only via multisig-executed transactions** that call the wallet's own admin functions (`addOwner`, `removeOwner`, `replaceOwner`, `changeRequirement`). Each of these functions is guarded by `onlyWallet` (`msg.sender == address(this)`), so a single owner cannot invoke them directly—they must be proposed, confirmed, and executed like any other multisig action.
 
 **Note**: After deploying a new contract, update the frontend `.env.local` file with the new contract address.
 
-### Important Points
+### Important points
 
-- ✅ Owners are set **once** during contract deployment
-- ❌ Cannot add or remove owners after deployment
-- ✅ To become an owner: Deploy a new contract with your address in the `OWNERS` list
-- ✅ Choose owners carefully at deployment time
+- ✅ Owners are set at deployment time, and can later be changed **only** through successful multisig transactions to the wallet
+- ✅ `removeOwner` includes a deadlock guard: it reverts if removing an owner would leave `requiredConfirmations` impossible to satisfy
+- ✅ `removeOwner` clears that owner's confirmations on pending transactions (see NatSpec in `MultiSigWallet.sol`)
+- ⚠️ `replaceOwner` swaps an owner address but does **not** rewrite historical confirmations keyed by owner address; review pending transactions after a replacement
+- ✅ Choose initial owners and thresholds carefully—malicious or careless owner votes can still change wallet policy
 
 ## ✅ Contract Verification
 
@@ -314,9 +317,9 @@ contracts/
 ## 🔒 Security Considerations
 
 1. **Owner Management**: 
-   - This implementation does not support adding/removing owners after deployment
-   - Choose owners carefully at deployment time
-   - Ensure owners have secure key management
+   - Owner and threshold changes are multisig-controlled (`onlyWallet`)—treat admin transactions with the same scrutiny as fund movements
+   - `removeOwner` may execute an O(n) sweep over stored transactions to clear pending confirmations; very large histories increase gas costs
+   - Choose owners carefully at deployment time and protect owner keys
 
 2. **Required Confirmations**:
    - Set `requiredConfirmations` appropriately (typically 50-70% of owners)

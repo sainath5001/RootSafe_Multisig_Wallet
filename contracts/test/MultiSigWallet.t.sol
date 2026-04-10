@@ -25,6 +25,9 @@ contract MultiSigWalletTest is Test {
     event ConfirmTransaction(uint256 indexed txId, address indexed owner);
     event RevokeConfirmation(uint256 indexed txId, address indexed owner);
     event ExecuteTransaction(uint256 indexed txId, address indexed to, uint256 value, bytes data);
+    event OwnerAdded(address indexed owner);
+    event OwnerRemoved(address indexed owner);
+    event RequirementChanged(uint256 requiredConfirmations);
 
     function setUp() public {
         // Create test accounts
@@ -52,6 +55,22 @@ contract MultiSigWalletTest is Test {
 
         // Fund the multisig wallet
         vm.deal(address(multisig), INITIAL_BALANCE);
+    }
+
+    function _submitAndConfirmAsMultisig(bytes memory data) internal returns (uint256 txId) {
+        vm.prank(owner1);
+        txId = multisig.submitTransaction(address(multisig), 0, data);
+
+        vm.prank(owner2);
+        multisig.confirmTransaction(txId);
+        vm.prank(owner3);
+        multisig.confirmTransaction(txId);
+    }
+
+    function _execAsMultisig(bytes memory data) internal returns (uint256 txId) {
+        txId = _submitAndConfirmAsMultisig(data);
+        vm.prank(owner1);
+        multisig.executeTransaction(txId);
     }
 
     // ============ Constructor Tests ============
@@ -558,5 +577,130 @@ contract MultiSigWalletTest is Test {
 
         assertTrue(success);
         assertEq(address(multisig).balance, balanceBefore + 0.5 ether);
+    }
+
+    // ============ Owner Management Tests ============
+
+    function test_AddOwner_SucceedsViaMultisigTx() public {
+        address newOwner = address(0xBEEF);
+        bytes memory data = abi.encodeWithSelector(multisig.addOwner.selector, newOwner);
+        _execAsMultisig(data);
+
+        assertTrue(multisig.isOwner(newOwner));
+        assertEq(multisig.getOwnerCount(), 4);
+    }
+
+    function test_AddOwner_RevertsForZeroAddress() public {
+        vm.expectRevert(MultiSigWallet.ZeroAddressNotAllowed.selector);
+        vm.prank(address(multisig));
+        multisig.addOwner(address(0));
+    }
+
+    function test_AddOwner_RevertsForDuplicateOwner() public {
+        vm.expectRevert(MultiSigWallet.AlreadyOwner.selector);
+        vm.prank(address(multisig));
+        multisig.addOwner(owner2);
+    }
+
+    function test_OnlyWallet_RevertsForNonWalletCaller() public {
+        vm.expectRevert(MultiSigWallet.OnlyWallet.selector);
+        multisig.addOwner(address(0xBEEF));
+    }
+
+    function test_RemoveOwner_RevokesStaleConfirmationsOnPendingTx() public {
+        // Create a pending tx approved by owner3
+        vm.prank(owner1);
+        uint256 pendingTxId = multisig.submitTransaction(recipient, 0, "");
+        vm.prank(owner3);
+        multisig.confirmTransaction(pendingTxId);
+
+        (, , , , uint256 beforeNum) = multisig.getTransaction(pendingTxId);
+        assertEq(beforeNum, 1);
+
+        // Lower requirement so removal is allowed.
+        bytes memory changeReq = abi.encodeWithSelector(multisig.changeRequirement.selector, uint256(1));
+        _execAsMultisig(changeReq);
+
+        // Remove owner3 via multisig tx
+        bytes memory rm = abi.encodeWithSelector(multisig.removeOwner.selector, owner3);
+        _execAsMultisig(rm);
+
+        assertFalse(multisig.isOwner(owner3));
+        assertEq(multisig.getOwnerCount(), 2);
+
+        (, , , , uint256 afterNum) = multisig.getTransaction(pendingTxId);
+        assertEq(afterNum, 0);
+        assertFalse(multisig.isConfirmed(pendingTxId, owner3));
+    }
+
+    function test_RemoveOwner_RevertsWhenWouldLockWallet() public {
+        // 3 owners with required=3: removing one leaves 2 owners but threshold stays 3 — invalid.
+        address[] memory owners3 = new address[](3);
+        owners3[0] = owner1;
+        owners3[1] = owner2;
+        owners3[2] = owner3;
+        vm.prank(owner1);
+        MultiSigWallet m = new MultiSigWallet(owners3, 3);
+
+        vm.expectRevert(MultiSigWallet.OwnersBelowRequirement.selector);
+        vm.prank(address(m));
+        m.removeOwner(owner3);
+    }
+
+    function test_RemoveOwner_SwapAndPopCorrectness() public {
+        // First lower requirement to 1 so removal is allowed.
+        bytes memory changeReq = abi.encodeWithSelector(multisig.changeRequirement.selector, uint256(1));
+        _execAsMultisig(changeReq);
+
+        // Remove middle owner and ensure array is compacted (swap & pop).
+        bytes memory rm = abi.encodeWithSelector(multisig.removeOwner.selector, owner2);
+        _execAsMultisig(rm);
+
+        assertFalse(multisig.isOwner(owner2));
+        assertEq(multisig.getOwnerCount(), 2);
+
+        address o0 = multisig.owners(0);
+        address o1 = multisig.owners(1);
+        assertTrue(o0 == owner1 || o0 == owner3);
+        assertTrue(o1 == owner1 || o1 == owner3);
+        assertTrue(o0 != o1);
+    }
+
+    function test_ReplaceOwner_EdgeCasesAndSuccess() public {
+        address newOwner = address(0xCAFE);
+
+        // Revert: new owner is zero
+        vm.expectRevert(MultiSigWallet.ZeroAddressNotAllowed.selector);
+        vm.prank(address(multisig));
+        multisig.replaceOwner(owner2, address(0));
+
+        // Revert: new owner already exists
+        vm.expectRevert(MultiSigWallet.AlreadyOwner.selector);
+        vm.prank(address(multisig));
+        multisig.replaceOwner(owner2, owner1);
+
+        // Success
+        bytes memory ok = abi.encodeWithSelector(multisig.replaceOwner.selector, owner2, newOwner);
+        _execAsMultisig(ok);
+
+        assertFalse(multisig.isOwner(owner2));
+        assertTrue(multisig.isOwner(newOwner));
+        assertEq(multisig.getOwnerCount(), 3);
+    }
+
+    function test_ChangeRequirement_BoundsValidation() public {
+        vm.expectRevert(MultiSigWallet.InvalidRequiredConfirmations.selector);
+        vm.prank(address(multisig));
+        multisig.changeRequirement(0);
+
+        // Revert: > owners length
+        vm.expectRevert(MultiSigWallet.InvalidRequiredConfirmations.selector);
+        vm.prank(address(multisig));
+        multisig.changeRequirement(4);
+
+        // Success: 1
+        bytes memory ok = abi.encodeWithSelector(multisig.changeRequirement.selector, uint256(1));
+        _execAsMultisig(ok);
+        assertEq(multisig.requiredConfirmations(), 1);
     }
 }

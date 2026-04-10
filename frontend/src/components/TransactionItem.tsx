@@ -4,8 +4,8 @@ import { useEffect } from 'react'
 import { useBalance, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { MULTISIG_ABI, Transaction } from '@/lib/contract'
 import { useMultisig } from '@/context/MultisigContext'
-import { formatRBTC, truncateAddress } from '@/lib/utils'
-import { FaCheckCircle, FaTimesCircle, FaClock, FaCopy, FaExternalLinkAlt, FaInfoCircle } from 'react-icons/fa'
+import { formatRBTC, truncateAddress, formatUserFacingWalletError } from '@/lib/utils'
+import { FaCheckCircle, FaTimesCircle, FaClock, FaCopy, FaInfoCircle } from 'react-icons/fa'
 import toast from 'react-hot-toast'
 import { TransactionModal } from './TransactionModal'
 import { useState } from 'react'
@@ -72,13 +72,13 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
     }
     // If a tx reverts, wagmi surfaces the revert reason via `error`.
     if (confirmError) {
-      toast.error(`Approve failed: ${(confirmError as Error).message}`)
+      toast.error(formatUserFacingWalletError(confirmError, 'Approval'))
     }
     if (revokeError) {
-      toast.error(`Revoke failed: ${(revokeError as Error).message}`)
+      toast.error(formatUserFacingWalletError(revokeError, 'Revoke'))
     }
     if (executeError) {
-      toast.error(`Execute failed: ${(executeError as Error).message}`)
+      toast.error(formatUserFacingWalletError(executeError, 'Execute'))
     }
   }, [
     isConfirmSuccess,
@@ -120,8 +120,8 @@ export function TransactionItem({ txId, tx, requiredConfirmations, isOwner, user
         functionName: 'confirmTransaction',
         args: [BigInt(txId)],
       })
-    } catch (e: any) {
-      toast.error(e?.shortMessage || e?.message || 'Approval failed')
+    } catch (e: unknown) {
+      toast.error(formatUserFacingWalletError(e, 'Approval'))
     }
   }
 

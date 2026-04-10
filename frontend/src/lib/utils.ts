@@ -21,7 +21,7 @@ export function formatRBTC(wei: bigint | string | undefined | null): string {
 export function parseRBTC(ether: string): bigint {
   try {
     return parseEther(ether)
-  } catch (error) {
+  } catch {
     throw new Error(`Invalid RBTC amount: ${ether}`)
   }
 }
@@ -61,7 +61,9 @@ export function isValidAddress(address: string): boolean {
   } catch {
     return false
   }
-}/**
+}
+
+/**
  * Validate hex string format
  */
 export function isValidHex(hex: string): boolean {
@@ -76,4 +78,36 @@ export function isValidHex(hex: string): boolean {
   } catch {
     return false
   }
+}
+
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message
+  if (typeof err === 'string') return err
+  try {
+    return JSON.stringify(err)
+  } catch {
+    return 'Unknown error'
+  }
+}
+
+/**
+ * Map common wallet / RPC errors to short UI copy; avoid dumping raw wagmi internals in toasts.
+ */
+export function formatUserFacingWalletError(err: unknown, action: string): string {
+  const msg = getErrorMessage(err).toLowerCase()
+
+  if (msg.includes('user rejected') || msg.includes('rejected the request') || msg.includes('denied transaction')) {
+    return `${action} was cancelled in the wallet.`
+  }
+  if (msg.includes('insufficient funds')) {
+    return `${action} failed: insufficient funds for gas.`
+  }
+  if (msg.includes('nonce too low')) {
+    return `${action} failed: stale nonce. Try again after the pending transaction clears.`
+  }
+  if (msg.includes('replacement transaction underpriced')) {
+    return `${action} failed: a pending transaction with the same nonce needs a higher gas price to replace.`
+  }
+
+  return `${action} failed. Please try again.`
 }

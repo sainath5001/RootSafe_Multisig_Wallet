@@ -79,7 +79,7 @@ export default function AboutPage() {
                   <FaCheckCircle className="text-green-400 mt-1 flex-shrink-0" />
                   <div>
                     <h3 className="text-white font-semibold mb-1">Reentrancy Protection</h3>
-                    <p className="text-rootstock-muted text-sm">Built with OpenZeppelin's ReentrancyGuard to prevent reentrancy attacks.</p>
+                    <p className="text-rootstock-muted text-sm">Built with OpenZeppelin&apos;s ReentrancyGuard to prevent reentrancy attacks.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

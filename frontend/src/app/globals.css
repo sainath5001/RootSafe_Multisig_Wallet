@@ -12,6 +12,11 @@
   --rootstock-gray-light: #3a3a3a;
   --rootstock-text: #ededed;
   --rootstock-text-muted: #a0a0a0;
+  --rootstock-success: #00aa00;
+  /* Recharts / chart theming (avoid scattering hex literals in chart components) */
+  --rootstock-chart-grid: var(--rootstock-gray);
+  --rootstock-chart-axis: var(--rootstock-text-muted);
+  --rootstock-chart-secondary-line: var(--rootstock-success);
 }
 
 body {

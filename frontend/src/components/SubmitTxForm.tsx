@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
-import { parseEther, isAddress } from 'viem'
+import { isAddress } from 'viem'
 import { MULTISIG_ABI } from '@/lib/contract'
 import { useMultisig } from '@/context/MultisigContext'
 import { parseRBTC, isValidAddress, isValidHex } from '@/lib/utils'
@@ -153,7 +153,7 @@ export function SubmitTxForm() {
           {isPending ? 'Waiting for approval...' : isConfirming ? 'Submitting...' : 'Submit Transaction'}
         </button>
         {isConfirmed && (
-          <p className="text-green-400 text-sm">
+          <p className="text-green-400 text-sm" role="status" aria-live="polite">
             Transaction submitted successfully!
           </p>
         )}

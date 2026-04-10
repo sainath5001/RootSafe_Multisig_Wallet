@@ -30,7 +30,7 @@ export default function DocsPage() {
                   <p>Install MetaMask and connect to Rootstock Testnet (Chain ID: 31).</p>
                 </div>
                 <div>
-                  <h3 className="text-white font-semibold mb-2">2. Verify You're an Owner</h3>
+                  <h3 className="text-white font-semibold mb-2">2. Verify You&apos;re an Owner</h3>
                   <p>Make sure your connected address is one of the multisig wallet owners.</p>
                 </div>
                 <div>

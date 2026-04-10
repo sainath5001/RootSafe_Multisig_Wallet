@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useRef, useId } from 'react'
 import { useReadContract } from 'wagmi'
 import { MULTISIG_ABI, normalizeTransaction } from '@/lib/contract'
 import { useMultisig } from '@/context/MultisigContext'
-import { formatRBTC, truncateAddress, getExplorerAddressUrl } from '@/lib/utils'
+import { formatRBTC, getExplorerAddressUrl } from '@/lib/utils'
 import { FaTimes, FaCopy, FaExternalLinkAlt, FaCheckCircle, FaClock } from 'react-icons/fa'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
@@ -16,18 +16,16 @@ interface TransactionModalProps {
 }
 
 export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProps) {
+  const titleId = useId()
   const { multisigAddress } = useMultisig()
+  const panelRef = useRef<HTMLDivElement>(null)
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null)
+
   const { data: tx } = useReadContract({
     address: multisigAddress ?? undefined,
     abi: MULTISIG_ABI,
     functionName: 'getTransaction',
     args: [BigInt(txId)],
-  })
-
-  const { data: ownerCount } = useReadContract({
-    address: multisigAddress ?? undefined,
-    abi: MULTISIG_ABI,
-    functionName: 'getOwnerCount',
   })
 
   const { data: requiredConfirmations } = useReadContract({
@@ -36,7 +34,66 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
     functionName: 'requiredConfirmations',
   })
 
-  // Note: owner-by-owner confirmation display is not implemented yet.
+  useEffect(() => {
+    if (!isOpen) return
+
+    previouslyFocusedRef.current = document.activeElement as HTMLElement | null
+
+    const focusFirst = () => {
+      const root = panelRef.current
+      if (!root) return
+      const focusables = root.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      const first = focusables[0]
+      ;(first ?? root).focus()
+    }
+
+    // Wait for paint so the dialog is focusable
+    const id = window.requestAnimationFrame(focusFirst)
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onClose()
+        return
+      }
+
+      if (e.key !== 'Tab') return
+      const root = panelRef.current
+      if (!root) return
+
+      const focusables = Array.from(
+        root.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => !el.hasAttribute('disabled') && el.tabIndex !== -1)
+
+      if (focusables.length === 0) return
+
+      const first = focusables[0]
+      const last = focusables[focusables.length - 1]
+      const active = document.activeElement as HTMLElement | null
+
+      if (e.shiftKey) {
+        if (active === first || active === root) {
+          e.preventDefault()
+          last.focus()
+        }
+      } else if (active === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.cancelAnimationFrame(id)
+      document.removeEventListener('keydown', onKeyDown)
+      const prev = previouslyFocusedRef.current
+      if (prev?.focus) prev.focus()
+    }
+  }, [isOpen, onClose, txId])
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -51,11 +108,27 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
   const safeTx = normalizeTransaction(tx)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
-      <div className="bg-rootstock-panel border border-rootstock rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4"
+      role="presentation"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="bg-rootstock-panel border border-rootstock rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto outline-none"
+      >
         <div className="sticky top-0 bg-rootstock-panel border-b border-rootstock p-6 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-white">Transaction #{txId} Details</h2>
+          <h2 id={titleId} className="text-2xl font-bold text-white">
+            Transaction #{txId} Details
+          </h2>
           <button
+            type="button"
             onClick={onClose}
             className="text-rootstock-muted hover:text-white transition-colors"
             aria-label="Close transaction details"
@@ -89,6 +162,7 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
             <div className="flex items-center gap-2">
               <code className="text-white font-mono text-sm break-all">{safeTx.to}</code>
               <button
+                type="button"
                 onClick={() => copyToClipboard(safeTx.to)}
                 className="text-rootstock-orange hover:underline transition-colors"
                 aria-label="Copy recipient address"
@@ -145,6 +219,7 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
             <div className="flex items-center gap-2">
               <code className="text-white font-mono text-sm">{txId}</code>
               <button
+                type="button"
                 onClick={() => copyToClipboard(txId.toString())}
                 className="text-rootstock-orange hover:underline transition-colors"
                 aria-label="Copy transaction id"
@@ -158,17 +233,3 @@ export function TransactionModal({ txId, isOpen, onClose }: TransactionModalProp
     </div>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

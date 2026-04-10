@@ -19,19 +19,19 @@ export default function ChartSection({ transactionHistory, confirmationRate }: C
         </div>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={transactionHistory}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
-            <XAxis dataKey="day" stroke="#a0a0a0" />
-            <YAxis stroke="#a0a0a0" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--rootstock-chart-grid)" />
+            <XAxis dataKey="day" stroke="var(--rootstock-chart-axis)" />
+            <YAxis stroke="var(--rootstock-chart-axis)" />
             <Tooltip
               contentStyle={{
                 backgroundColor: 'var(--rootstock-gray-dark)',
                 border: '1px solid var(--rootstock-gray)',
-                color: '#ededed',
+                color: 'var(--rootstock-text)',
               }}
             />
             <Legend />
             <Line type="monotone" dataKey="transactions" stroke="var(--rootstock-orange)" strokeWidth={2} />
-            <Line type="monotone" dataKey="confirmations" stroke="#00aa00" strokeWidth={2} />
+            <Line type="monotone" dataKey="confirmations" stroke="var(--rootstock-chart-secondary-line)" strokeWidth={2} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -44,14 +44,14 @@ export default function ChartSection({ transactionHistory, confirmationRate }: C
         </div>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={confirmationRate}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
-            <XAxis dataKey="status" stroke="#a0a0a0" />
-            <YAxis stroke="#a0a0a0" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--rootstock-chart-grid)" />
+            <XAxis dataKey="status" stroke="var(--rootstock-chart-axis)" />
+            <YAxis stroke="var(--rootstock-chart-axis)" />
             <Tooltip
               contentStyle={{
                 backgroundColor: 'var(--rootstock-gray-dark)',
                 border: '1px solid var(--rootstock-gray)',
-                color: '#ededed',
+                color: 'var(--rootstock-text)',
               }}
             />
             <Bar dataKey="count" fill="var(--rootstock-orange)" />

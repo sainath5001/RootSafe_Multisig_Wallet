@@ -1,20 +1,23 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAccount, useReadContract } from 'wagmi'
 import { MULTISIG_ABI, normalizeTransaction } from '@/lib/contract'
 import { useMultisig } from '@/context/MultisigContext'
 import { TransactionItem } from './TransactionItem'
-import { FaSearch, FaFilter } from 'react-icons/fa'
+import { FaSearch } from 'react-icons/fa'
 import { useIsMounted } from '@/hooks/useIsMounted'
+
+const PAGE_SIZE = 50
 
 export function TxListSimple() {
   const isMounted = useIsMounted()
-  const { multisigAddress, missingEnvDefault } = useMultisig()
+  const { multisigAddress } = useMultisig()
 
   const { address, isConnected } = useAccount()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'executed'>('all')
+  const [page, setPage] = useState(1)
 
   const { data: txCount } = useReadContract({
     address: isMounted && multisigAddress ? multisigAddress : undefined,
@@ -55,17 +58,31 @@ export function TxListSimple() {
 
   // Calculate txCountNum - must be before early returns (Rules of Hooks)
   const txCountNum = isMounted && txCount ? Number(txCount) : 0
+  const totalPages = Math.max(1, Math.ceil(txCountNum / PAGE_SIZE))
+  const pageStart = (page - 1) * PAGE_SIZE
 
-  // Filter transactions - must be before early returns (Rules of Hooks)
-  const filteredTxIds = useMemo(() => {
-    if (!isMounted || !txCountNum) return []
-    const allIds = Array.from({ length: txCountNum }, (_, i) => i)
-    if (filterStatus === 'all' && !searchTerm) return allIds
-    return allIds.filter((id) => {
-      // We'll filter in the wrapper component based on actual tx data
-      return true
-    })
-  }, [isMounted, txCountNum, filterStatus, searchTerm])
+  const { data: txIdsRaw } = useReadContract({
+    address: isMounted && multisigAddress ? multisigAddress : undefined,
+    abi: MULTISIG_ABI,
+    functionName: 'getTransactionIds',
+    args: [BigInt(pageStart), BigInt(PAGE_SIZE)],
+    query: {
+      enabled: isMounted && !!multisigAddress && txCountNum > 0,
+    },
+  })
+
+  const pageTxIds = useMemo(() => {
+    if (!txIdsRaw || !Array.isArray(txIdsRaw)) return []
+    return txIdsRaw.map((id) => Number(id))
+  }, [txIdsRaw])
+
+  useEffect(() => {
+    setPage(1)
+  }, [multisigAddress, txCountNum])
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages)
+  }, [page, totalPages])
 
   // Early returns AFTER all hooks are called
   if (!isMounted) {
@@ -118,7 +135,7 @@ export function TxListSimple() {
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-rootstock-muted" />
           <input
             type="text"
-            placeholder="Search by transaction ID or address..."
+            placeholder="Search on this page by transaction ID or recipient address..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-rootstock-surface border border-rootstock rounded-lg text-white placeholder-rootstock-subtle focus:outline-none focus:ring-2 focus:ring-[var(--rootstock-orange)] focus:border-[var(--rootstock-orange)] transition-colors"
@@ -169,19 +186,47 @@ export function TxListSimple() {
       {txCountNum === 0 ? (
         <p className="text-rootstock-muted">No transactions yet.</p>
       ) : (
-        <div className="space-y-4">
-          {filteredTxIds.map((txId) => (
-            <TransactionItemWrapper
-              key={txId}
-              txId={txId}
-              requiredConfirmations={(requiredConfirmations ?? BigInt(0)) as bigint}
-              isOwner={isOwner === true}
-              userAddress={address}
-              searchTerm={searchTerm}
-              filterStatus={filterStatus}
-            />
-          ))}
-        </div>
+        <>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 text-sm text-rootstock-muted">
+            <span>
+              Page {page} of {totalPages}
+              {pageTxIds.length > 0
+                ? ` · IDs ${pageTxIds[0]}–${pageTxIds[pageTxIds.length - 1]} (${txCountNum} total)`
+                : ' · Loading…'}
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="px-3 py-1 rounded-md border border-rootstock bg-rootstock-panel text-white disabled:opacity-40"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+                className="px-3 py-1 rounded-md border border-rootstock bg-rootstock-panel text-white disabled:opacity-40"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+          <div className="space-y-4">
+            {pageTxIds.map((txId) => (
+              <TransactionItemWrapper
+                key={txId}
+                txId={txId}
+                requiredConfirmations={(requiredConfirmations ?? BigInt(0)) as bigint}
+                isOwner={isOwner === true}
+                userAddress={address}
+                searchTerm={searchTerm}
+                filterStatus={filterStatus}
+              />
+            ))}
+          </div>
+        </>
       )}
     </div>
   )
