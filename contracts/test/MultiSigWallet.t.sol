@@ -27,6 +27,7 @@ contract MultiSigWalletTest is Test {
     event ExecuteTransaction(uint256 indexed txId, address indexed to, uint256 value, bytes data);
     event OwnerAdded(address indexed owner);
     event OwnerRemoved(address indexed owner);
+    event OwnerReplaced(address indexed oldOwner, address indexed newOwner);
     event RequirementChanged(uint256 requiredConfirmations);
 
     function setUp() public {
@@ -65,6 +66,10 @@ contract MultiSigWalletTest is Test {
         multisig.confirmTransaction(txId);
         vm.prank(owner3);
         multisig.confirmTransaction(txId);
+    }
+
+    function _submitAndConfirmAsMultisig_NoExecute(bytes memory data) internal returns (uint256 txId) {
+        txId = _submitAndConfirmAsMultisig(data);
     }
 
     function _execAsMultisig(bytes memory data) internal returns (uint256 txId) {
@@ -584,7 +589,12 @@ contract MultiSigWalletTest is Test {
     function test_AddOwner_SucceedsViaMultisigTx() public {
         address newOwner = address(0xBEEF);
         bytes memory data = abi.encodeWithSelector(multisig.addOwner.selector, newOwner);
-        _execAsMultisig(data);
+        uint256 txId = _submitAndConfirmAsMultisig_NoExecute(data);
+
+        vm.expectEmit(true, false, false, true);
+        emit OwnerAdded(newOwner);
+        vm.prank(owner1);
+        multisig.executeTransaction(txId);
 
         assertTrue(multisig.isOwner(newOwner));
         assertEq(multisig.getOwnerCount(), 4);
@@ -602,9 +612,14 @@ contract MultiSigWalletTest is Test {
         multisig.addOwner(owner2);
     }
 
-    function test_OnlyWallet_RevertsForNonWalletCaller() public {
+    function test_AddOwner_RevertsWhen_NotWallet() public {
         vm.expectRevert(MultiSigWallet.OnlyWallet.selector);
         multisig.addOwner(address(0xBEEF));
+    }
+
+    function test_RemoveOwner_RevertsWhen_NotWallet() public {
+        vm.expectRevert(MultiSigWallet.OnlyWallet.selector);
+        multisig.removeOwner(owner3);
     }
 
     function test_RemoveOwner_RevokesStaleConfirmationsOnPendingTx() public {
@@ -623,7 +638,12 @@ contract MultiSigWalletTest is Test {
 
         // Remove owner3 via multisig tx
         bytes memory rm = abi.encodeWithSelector(multisig.removeOwner.selector, owner3);
-        _execAsMultisig(rm);
+        uint256 rmTxId = _submitAndConfirmAsMultisig_NoExecute(rm);
+
+        vm.expectEmit(true, false, false, true);
+        emit OwnerRemoved(owner3);
+        vm.prank(owner1);
+        multisig.executeTransaction(rmTxId);
 
         assertFalse(multisig.isOwner(owner3));
         assertEq(multisig.getOwnerCount(), 2);
@@ -666,22 +686,36 @@ contract MultiSigWalletTest is Test {
         assertTrue(o0 != o1);
     }
 
-    function test_ReplaceOwner_EdgeCasesAndSuccess() public {
-        address newOwner = address(0xCAFE);
-
-        // Revert: new owner is zero
+    function test_ReplaceOwner_RevertWhen_ZeroAddress() public {
         vm.expectRevert(MultiSigWallet.ZeroAddressNotAllowed.selector);
         vm.prank(address(multisig));
         multisig.replaceOwner(owner2, address(0));
+    }
 
-        // Revert: new owner already exists
+    function test_ReplaceOwner_RevertWhen_Duplicate() public {
         vm.expectRevert(MultiSigWallet.AlreadyOwner.selector);
         vm.prank(address(multisig));
         multisig.replaceOwner(owner2, owner1);
+    }
 
-        // Success
+    function test_ReplaceOwner_RevertsWhen_NotWallet() public {
+        vm.expectRevert(MultiSigWallet.OnlyWallet.selector);
+        multisig.replaceOwner(owner2, address(0xCAFE));
+    }
+
+    function test_ReplaceOwner_Success() public {
+        address newOwner = address(0xCAFE);
         bytes memory ok = abi.encodeWithSelector(multisig.replaceOwner.selector, owner2, newOwner);
-        _execAsMultisig(ok);
+        uint256 txId = _submitAndConfirmAsMultisig_NoExecute(ok);
+
+        vm.expectEmit(true, true, false, false);
+        emit OwnerReplaced(owner2, newOwner);
+        vm.expectEmit(true, false, false, false);
+        emit OwnerRemoved(owner2);
+        vm.expectEmit(true, false, false, false);
+        emit OwnerAdded(newOwner);
+        vm.prank(owner1);
+        multisig.executeTransaction(txId);
 
         assertFalse(multisig.isOwner(owner2));
         assertTrue(multisig.isOwner(newOwner));
@@ -700,7 +734,17 @@ contract MultiSigWalletTest is Test {
 
         // Success: 1
         bytes memory ok = abi.encodeWithSelector(multisig.changeRequirement.selector, uint256(1));
-        _execAsMultisig(ok);
+        uint256 txId = _submitAndConfirmAsMultisig_NoExecute(ok);
+
+        vm.expectEmit(false, false, false, true);
+        emit RequirementChanged(1);
+        vm.prank(owner1);
+        multisig.executeTransaction(txId);
         assertEq(multisig.requiredConfirmations(), 1);
+    }
+
+    function test_ChangeRequirement_RevertsWhen_NotWallet() public {
+        vm.expectRevert(MultiSigWallet.OnlyWallet.selector);
+        multisig.changeRequirement(1);
     }
 }

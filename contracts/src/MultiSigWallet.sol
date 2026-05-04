@@ -44,6 +44,11 @@ contract MultiSigWallet is ReentrancyGuard {
     /// @param owner The address of the owner that was removed
     event OwnerRemoved(address indexed owner);
 
+    /// @dev Emitted when an owner is replaced
+    /// @param oldOwner The owner address that was replaced
+    /// @param newOwner The new owner address
+    event OwnerReplaced(address indexed oldOwner, address indexed newOwner);
+
     /// @dev Emitted when required confirmations is changed
     /// @param requiredConfirmations New number of required confirmations
     event RequirementChanged(uint256 requiredConfirmations);
@@ -241,6 +246,8 @@ contract MultiSigWallet is ReentrancyGuard {
 
     /// @notice Remove an owner. Must be executed via the multisig itself.
     /// @dev Removing an owner also revokes their confirmations on all pending transactions (O(n) over tx history).
+    ///      Assumes the wallet's transaction history remains reasonably bounded (educational/demo use);
+    ///      very large histories may make this function too expensive to execute within block gas limits.
     function removeOwner(address _owner) external onlyWallet {
         if (!isOwner[_owner]) revert NotAnOwner();
 
@@ -274,12 +281,23 @@ contract MultiSigWallet is ReentrancyGuard {
     }
 
     /// @notice Replace an owner. Must be executed via the multisig itself.
-    /// @dev Confirmations are tracked by owner address; replacing an owner does not migrate per-tx confirmations
-    ///      from the old key to the new key. Review pending transactions after a replacement.
+    /// @dev Replaces an owner address without changing the owners array length.
+    ///      Confirmations are tracked by owner address; this function revokes the old owner's confirmations
+    ///      on all pending transactions (O(n) over tx history) but does not “migrate” them to the new owner.
     function replaceOwner(address _oldOwner, address _newOwner) external onlyWallet {
         if (!isOwner[_oldOwner]) revert NotAnOwner();
         if (_newOwner == address(0)) revert ZeroAddressNotAllowed();
         if (isOwner[_newOwner]) revert AlreadyOwner();
+
+        // IMPORTANT: revoke the old owner's confirmations on pending transactions for consistency with removeOwner.
+        // Note: this loop is O(n) over all transactions and can become expensive for wallets with a large tx history.
+        for (uint256 txId = 0; txId < transactions.length; txId++) {
+            if (transactions[txId].executed) continue;
+            if (confirmations[txId][_oldOwner]) {
+                confirmations[txId][_oldOwner] = false;
+                transactions[txId].numConfirmations -= 1;
+            }
+        }
 
         isOwner[_oldOwner] = false;
         isOwner[_newOwner] = true;
@@ -287,6 +305,7 @@ contract MultiSigWallet is ReentrancyGuard {
         for (uint256 i = 0; i < owners.length; i++) {
             if (owners[i] == _oldOwner) {
                 owners[i] = _newOwner;
+                emit OwnerReplaced(_oldOwner, _newOwner);
                 emit OwnerRemoved(_oldOwner);
                 emit OwnerAdded(_newOwner);
                 break;

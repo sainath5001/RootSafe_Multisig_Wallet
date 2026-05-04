@@ -138,6 +138,7 @@ Safety rules enforced:
 - `changeRequirement` must satisfy \(1 \le requiredConfirmations \le owners.length\)
 - `removeOwner` is blocked if it would make `requiredConfirmations > owners.length - 1` (prevents permanent lock)
 - `removeOwner` also clears the removed address's confirmations on **pending** transactions (O(n) over stored transactions; can be costly for very large histories)
+- `replaceOwner` clears the replaced (old) address's confirmations on **pending** transactions (O(n) over stored transactions; can be costly for very large histories)
 
 ### Data size limit
 
@@ -269,7 +270,7 @@ Required confirmations: 2
 - ✅ Owners are set at deployment time, and can later be changed **only** through successful multisig transactions to the wallet
 - ✅ `removeOwner` includes a deadlock guard: it reverts if removing an owner would leave `requiredConfirmations` impossible to satisfy
 - ✅ `removeOwner` clears that owner's confirmations on pending transactions (see NatSpec in `MultiSigWallet.sol`)
-- ⚠️ `replaceOwner` swaps an owner address but does **not** rewrite historical confirmations keyed by owner address; review pending transactions after a replacement
+- ⚠️ `replaceOwner` swaps an owner address and revokes the old address's confirmations on pending transactions, but it does **not** “migrate” confirmations to the new address; review pending transactions after a replacement
 - ✅ Choose initial owners and thresholds carefully—malicious or careless owner votes can still change wallet policy
 
 ## ✅ Contract Verification

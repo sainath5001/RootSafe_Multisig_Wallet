@@ -143,6 +143,7 @@ export function TxListSimple() {
         </div>
         <div className="flex gap-2">
           <button
+            type="button"
             onClick={() => setFilterStatus('all')}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
               filterStatus === 'all'
@@ -153,6 +154,7 @@ export function TxListSimple() {
             All
           </button>
           <button
+            type="button"
             onClick={() => setFilterStatus('pending')}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
               filterStatus === 'pending'
@@ -163,6 +165,7 @@ export function TxListSimple() {
             Pending
           </button>
           <button
+            type="button"
             onClick={() => setFilterStatus('executed')}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
               filterStatus === 'executed'
@@ -260,7 +263,15 @@ function TransactionItemWrapper({
   })
 
   if (!tx || typeof tx !== 'object') {
-    return <div className="p-4 border border-rootstock rounded-lg bg-rootstock-panel text-rootstock-muted">Loading transaction #{txId}...</div>
+    return (
+      <div
+        className="p-4 border border-rootstock rounded-lg bg-rootstock-panel text-rootstock-muted"
+        role="status"
+        aria-live="polite"
+      >
+        Loading transaction #{txId}...
+      </div>
+    )
   }
 
   const safeTx = normalizeTransaction(tx)
